@@ -3,12 +3,14 @@ import { useNavigate } from 'react-router-dom';
 import signin from '../functions/signin';
 import { type Sign_In } from '@kunaljprsingh/ecom-types';
 import toast from 'react-hot-toast';
+import useAuth from '../hooks/useAuth';
 
 export default function SignInForm() {
     const [formData, setFormData] = useState<Sign_In>({
         email: '',
         password: '',
     });
+    const { onLogin } = useAuth()
 
     const navigate = useNavigate();
 
@@ -26,6 +28,8 @@ export default function SignInForm() {
             toast.error(message);
         } else {
             localStorage.setItem('Token', `Bearer ${token}`)
+            onLogin();
+            navigate("/")
         }
     };
 
