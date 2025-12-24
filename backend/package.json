@@ -17,7 +17,7 @@
     "typescript": "^5.9.3"
   },
   "dependencies": {
-    "@kunaljprsingh/ecom-types": "^1.0.5",
+    "@kunaljprsingh/ecom-types": "^1.0.6",
     "@prisma/adapter-pg": "^7.1.0",
     "@prisma/client": "^7.1.0",
     "@types/cors": "^2.8.19",
