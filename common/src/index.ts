@@ -26,6 +26,14 @@ export const post_product = z.object({
     qunatity: z.int()
 })
 
+export const cart = z.object({
+    product_id: z.string(),
+    quantity: z.number(),
+    price: z.number()
+})
+
+
 export type Sign_Up = z.infer<typeof sign_up>
 export type Sign_In = z.infer<typeof sign_in>
 export type Product = z.infer<typeof post_product>
+export type Cart = z.infer<typeof cart>
