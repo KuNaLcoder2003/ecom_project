@@ -1,0 +1,10 @@
+/*
+  Warnings:
+
+  - Added the required column `price` to the `cart_products` table without a default value. This is not possible if the table is not empty.
+  - Added the required column `qunatity` to the `cart_products` table without a default value. This is not possible if the table is not empty.
+
+*/
+-- AlterTable
+ALTER TABLE "cart_products" ADD COLUMN     "price" INTEGER NOT NULL,
+ADD COLUMN     "qunatity" INTEGER NOT NULL;

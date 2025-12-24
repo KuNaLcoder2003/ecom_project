@@ -21,6 +21,7 @@ model users{
   gender String
   age String 
   addresses address[]
+  cart cart?
 }
 
 model address {
@@ -42,6 +43,7 @@ model products {
   price Int
   quantity Int
   images product_images[]
+  cart_products cart_products[]
 }
 
 model product_images {
@@ -49,6 +51,23 @@ model product_images {
   image_url String
   product_id String
   product products @relation(fields: [product_id] , references: [id])
+}
+
+model cart {
+  id String @id @default(uuid())
+  user_id String @unique
+  user users @relation(fields: [user_id], references: [id])
+  cart_products cart_products[]
+}
+
+model cart_products {
+  cart_id String
+  product_id String
+  qunatity Int
+  price Int
+  products products @relation(fields: [product_id] , references: [id])
+  cart cart @relation(fields: [cart_id], references: [id])
+  @@id([cart_id , product_id])
 }
 
 
