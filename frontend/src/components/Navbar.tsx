@@ -4,7 +4,7 @@ import useAuth from "../hooks/useAuth"
 import { Search, User2Icon } from "lucide-react";
 
 const Navbar: React.FC = () => {
-    const { isLoggedIn } = useAuth();
+    const { isLoggedIn, onLogout } = useAuth();
     const navigations = [
         {
             id: 1,
@@ -36,9 +36,10 @@ const Navbar: React.FC = () => {
             navigate('/signin')
         }
     }
+
     return (
-        <div className="w-screen p-3 bg-white overflow-x-hidden">
-            <div className="max-w-8xl m-auto flex items-center justify-around">
+        <div className="w-screen p-3 bg-white overflow-x-hidden relative z-[99999]">
+            <div className="max-w-8xl m-auto flex items-center justify-around z-[99999]">
                 <div className="flex items-center gap-2">
                     <div className="flex items-center justify-center rounded-full w-[40px] h-[40px] bg-black">
                         <img src="./assets/Logo.png" />
@@ -67,16 +68,21 @@ const Navbar: React.FC = () => {
                         </div>
                     </div>
                     <div className="flex items-center justify-center">
-                        <button onClick={handleCart}>
+                        <button className="cursor-pointer" onClick={handleCart}>
                             <img className="" src="./assets/cart-icon.png" />
                         </button>
                     </div>
-                    <div className="flex items-center justify-center">
+                    <div className="flex items-center justify-center z-[99999]">
                         {
                             isLoggedIn ?
 
-                                <div className="flex items-center justify-center w-[30px] h-[30px] rounded-full bg-black text-white">
-                                    K
+                                <div className="flex items-center gap-4">
+                                    <div className="flex items-center justify-center w-[30px] h-[30px] rounded-full bg-black text-white cursor-pointer z-[99999]">
+                                        <p>K</p>
+                                    </div>
+                                    <button onClick={() => {
+                                        onLogout()
+                                    }} className="p-2 px-4 bg-black text-white text-center cursor-pointer rounded-lg">Logout</button>
                                 </div> : <User2Icon />
                         }
                     </div>

@@ -27,7 +27,7 @@ export default function SignInForm() {
         if (!token) {
             toast.error(message);
         } else {
-            localStorage.setItem('Token', `Bearer ${token}`)
+            localStorage.setItem('token', `Bearer ${token}`)
             onLogin();
             navigate("/")
         }
