@@ -118,7 +118,7 @@ cartRouter.post('/', authMiddleware, async (req: any, res: express.Response) => 
         }
         res.status(200).json({
             message: "Added to cart",
-            valid: false
+            valid: true
         })
 
 
