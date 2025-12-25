@@ -32,8 +32,13 @@ export const cart = z.object({
     price: z.number()
 })
 
+export const order = z.object({
+    user_id: z.string(),
+    product_id: z.string(),
+})
 
 export type Sign_Up = z.infer<typeof sign_up>
 export type Sign_In = z.infer<typeof sign_in>
 export type Product = z.infer<typeof post_product>
 export type Cart = z.infer<typeof cart>
+export type Order = z.infer<typeof order>
