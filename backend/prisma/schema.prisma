@@ -22,6 +22,7 @@ model users{
   age String 
   addresses address[]
   cart cart?
+  orders order[]
 }
 
 model address {
@@ -34,6 +35,7 @@ model address {
   pin_code String
   user_id String
   user users @relation(fields: [user_id] , references: [id])
+  order order[]
 }
 
 model products {
@@ -44,6 +46,7 @@ model products {
   quantity Int
   images product_images[]
   cart_products cart_products[]
+  order order[]
 }
 
 model product_images {
@@ -58,6 +61,7 @@ model cart {
   user_id String @unique
   user users @relation(fields: [user_id], references: [id])
   cart_products cart_products[]
+  order order[]
 }
 
 model cart_products {
@@ -69,5 +73,21 @@ model cart_products {
   cart cart @relation(fields: [cart_id], references: [id])
   @@id([cart_id , product_id])
 }
+
+model order{
+  id String @id @default(uuid())
+  user_id String
+  product_id String 
+  cart_id String
+  address_id String
+  quantity Int
+  price Int
+  user users @relation(fields: [user_id] , references: [id])
+  product products @relation(fields: [product_id] , references: [id])
+  cart cart @relation(fields: [cart_id] , references: [id])
+  address address @relation(fields: [address_id] , references: [id])
+}
+
+
 
 
