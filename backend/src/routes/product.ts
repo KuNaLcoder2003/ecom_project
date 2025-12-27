@@ -138,4 +138,46 @@ productsRouter.get('/', async (req: express.Request, res: express.Response) => {
         })
     }
 })
+
+productsRouter.get('/:productId', async (req: express.Request, res: express.Response) => {
+    try {
+        const productId = req.params.productId;
+        if (!productId) {
+            res.status(400).json({
+                message: "Bad request",
+                valid: false
+            })
+            return
+        }
+        const product = await prisma.products.findUnique({
+            where: {
+                id: productId
+            }
+        })
+        if (!product) {
+            res.status(404).json({
+                message: "Product Not Found",
+                valid: false
+            })
+            return
+        }
+        const productImages = await prisma.product_images.findMany({
+            where: {
+                product_id: product.id
+            }
+        })
+        res.status(200).json({
+            valid: true,
+            product: {
+                ...product,
+                images: productImages
+            }
+        })
+    } catch (error) {
+        res.status(500).json({
+            message: "Something went wrong",
+            valid: false
+        })
+    }
+})
 export default productsRouter;
