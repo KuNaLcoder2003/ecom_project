@@ -2,11 +2,12 @@ import express from 'express'
 const cartRouter = express.Router()
 import { PrismaPg } from '@prisma/adapter-pg'
 import { PrismaClient } from '@prisma/client';
-import { type Cart, cart } from '@kunaljprsingh/ecom-types';
+import { type Cart, cart, Product } from '@kunaljprsingh/ecom-types';
 import authMiddleware from '../middlewares/authMiddleware.js';
 const connectionString = `${process.env.DATABASE_URL}`
 const adapter = new PrismaPg({ connectionString })
 const prisma = new PrismaClient({ adapter });
+
 
 cartRouter.post('/', authMiddleware, async (req: any, res: express.Response) => {
     try {
@@ -123,17 +124,19 @@ cartRouter.post('/', authMiddleware, async (req: any, res: express.Response) => 
 
 
     } catch (error) {
+        console.log(error);
         res.status(500).json({
             message: "Something went wrong"
         })
     }
 })
 
-cartRouter.get('/:cartId', async (req: express.Request, res: express.Response) => {
+cartRouter.get('/products', authMiddleware, async (req: any, res: express.Response) => {
+    const userId = req.userId
     try {
         const cart = await prisma.cart.findFirst({
             where: {
-                id: req.params.cartId
+                user_id: userId
             }
         })
         if (!cart) {
@@ -157,14 +160,137 @@ cartRouter.get('/:cartId', async (req: express.Request, res: express.Response) =
             return item.product_id
         })
 
-        const products = await prisma.products.findMany({
+        const products = await prisma.product_images.findMany({
             where: {
-                id: {
+                product_id: {
                     in: product_ids
                 }
             }
         })
+        const cart_product_list = cart_products.map((item) => {
+            let temp: any = { ...item }
+            products.map((obj) => {
+                if (item.product_id == obj.product_id) {
+                    if (temp["images"]) {
+                        temp.images = [...temp.images, obj]
+                    } else {
+                        temp["images"] = [obj]
+                    }
+                }
+            })
+            return temp;
+        })
+        res.status(200).json({
+            cart: cart_product_list,
+            valid: true
+        })
+    } catch (error) {
+        res.status(500).json({
+            message: "Something went wrong"
+        })
+    }
+})
 
+cartRouter.get('/count/:productId', authMiddleware, async (req: express.Request, res: express.Response) => {
+    try {
+        const product_id = req.params.productId
+        if (!product_id) {
+            res.status(400).json({
+                message: "Bad request",
+                valid: false
+            })
+            return
+        }
+        const cart = await prisma.cart.findUnique({
+            where: {
+                id: ""
+            }
+        })
+
+        if (!cart) {
+            res.status(400).json({
+                message: "Cart does not exists, nothing to delete",
+                valid: false
+            })
+            return
+        }
+        const repsonse = await prisma.$transaction(async (tx) => {
+            const product_count = await tx.cart_products.findUnique({
+                where: {
+                    cart_id_product_id: {
+                        cart_id: cart.id,
+                        product_id: req.params.productId
+                    }
+                },
+                select: {
+                    qunatity: true
+                }
+            })
+            return { product_count }
+        })
+        if (!repsonse.product_count) {
+            res.status(404).json({
+                message: "Product not found",
+                valid: false
+            })
+            return
+        }
+        res.status(200).json({
+            count: repsonse.product_count.qunatity,
+            valid: true
+        })
+    } catch (error) {
+        res.status(500).json({
+            message: "Something went wrong"
+        })
+    }
+})
+
+cartRouter.delete('/:productId', authMiddleware, async (req: any, res: express.Response) => {
+    try {
+        const product_id = req.params.productId
+        if (!product_id) {
+            res.status(400).json({
+                message: "Bad request",
+                valid: false
+            })
+            return
+        }
+        const cart = await prisma.cart.findUnique({
+            where: {
+                id: req.userId
+            }
+        })
+
+        if (!cart) {
+            res.status(400).json({
+                message: "Cart does not exists, nothing to delete",
+                valid: false
+            })
+            return
+        }
+        const response = await prisma.$transaction(async (tx) => {
+            const updated_cart = await tx.cart_products.delete({
+                where: {
+                    cart_id_product_id: {
+                        cart_id: cart.id,
+                        product_id: product_id
+                    }
+                }
+            })
+            return { updated_cart }
+        })
+        if (!response.updated_cart) {
+            res.status(403).json({
+                message: "Unable to delete the product",
+                valid: false
+            })
+            return
+        }
+        res.status(200).json({
+            message: "Product deleted",
+            valid: true
+        })
     } catch (error) {
         res.status(500).json({
             message: "Something went wrong"
