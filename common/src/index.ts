@@ -37,8 +37,23 @@ export const order = z.object({
     product_id: z.string(),
 })
 
+export const ProductImages = z.object({
+    id: z.string(),
+    image_url: z.string(),
+    product_id: z.string()
+})
+export const Product_ProductImages = z.object({
+    id: z.string(),
+    product_name: z.string(),
+    product_description: z.string(),
+    price: z.int(),
+    qunatity: z.int(),
+    images: z.array(ProductImages)
+})
+
 export type Sign_Up = z.infer<typeof sign_up>
 export type Sign_In = z.infer<typeof sign_in>
 export type Product = z.infer<typeof post_product>
 export type Cart = z.infer<typeof cart>
 export type Order = z.infer<typeof order>
+export type Product_Images = z.infer<typeof Product_ProductImages>
