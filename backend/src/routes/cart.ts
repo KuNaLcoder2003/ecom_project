@@ -2,11 +2,28 @@ import express from 'express'
 const cartRouter = express.Router()
 import { PrismaPg } from '@prisma/adapter-pg'
 import { PrismaClient } from '@prisma/client';
-import { type Cart, cart, Product } from '@kunaljprsingh/ecom-types';
+import { type Cart, cart } from '@kunaljprsingh/ecom-types';
 import authMiddleware from '../middlewares/authMiddleware.js';
+import { cart_product_availability } from '../function/checkAvailabilty.js';
 const connectionString = `${process.env.DATABASE_URL}`
 const adapter = new PrismaPg({ connectionString })
 const prisma = new PrismaClient({ adapter });
+interface ProductImage {
+    id: string;
+    image_url: string;
+    product_id: string;
+}
+interface Cart_Type {
+    cart_id: string;
+    product_id: string;
+    qunatity: number;
+    price: number;
+    images: ProductImage[]
+}
+interface Cart_Product {
+    product_id: string,
+    requested_qunatity: number
+}
 
 
 cartRouter.post('/', authMiddleware, async (req: any, res: express.Response) => {
@@ -292,6 +309,49 @@ cartRouter.delete('/:productId', authMiddleware, async (req: any, res: express.R
             valid: true
         })
     } catch (error) {
+        res.status(500).json({
+            message: "Something went wrong"
+        })
+    }
+})
+
+cartRouter.post('/checkout', authMiddleware, async (req: express.Request, res: express.Response) => {
+    try {
+        const userId = "req.userId";
+        if (!userId) {
+            res.status(401).json({
+                message: "Unauthorized"
+            })
+            return
+        }
+
+        const cart: Cart_Type[] = req.body.cart;
+        const products: Cart_Product[] = cart.map(product => {
+            return {
+                product_id: product.product_id,
+                requested_qunatity: product.qunatity
+            }
+        })
+        // first check all product's quantity , if the qunatity from cart is more than quantity from DB -> throw error to user that some products are not availble in stock
+        // if not then -> all okay , start a session
+        const response = await prisma.$transaction(async (tx) => {
+            const arr = await cart_product_availability(tx, products);
+            return { arr };
+        })
+
+        if (response.arr.length > 0) {
+            res.status(403).json({
+                message: "Some of the cart products are limited/unavailable in stock",
+                unavailable: response.arr,
+                valid: false
+            })
+        }
+        res.status(200).json({
+            message: "Proceeding to checkout",
+            valid: true
+        })
+    } catch (error) {
+        console.log(error);
         res.status(500).json({
             message: "Something went wrong"
         })
