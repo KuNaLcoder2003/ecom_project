@@ -11,9 +11,20 @@ orderRouter.post('/cart', authMiddleware, async (req: express.Request, res: expr
     // THIS ROUTE IS FOR ORDERING FROM CART
     try {
         const userId = "req.userId"
-    } catch (error) {
+        if (!userId) {
+            res.status(401).json({
+                message: "Unauthorized"
+            })
+            return
+        }
 
+    } catch (error) {
+        res.status(500).json({
+            message: "Something went wrong"
+        })
     }
 })
+
+orderRouter.post('/createSession',)
 
 export default orderRouter;
