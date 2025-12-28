@@ -23,6 +23,7 @@ model users{
   addresses address[]
   cart cart?
   orders order[]
+  orser_session order_session[]
 }
 
 model address {
@@ -47,6 +48,7 @@ model products {
   images product_images[]
   cart_products cart_products[]
   order order[]
+  ordered_products ordered_products[]
 }
 
 model product_images {
@@ -80,12 +82,34 @@ model order{
   product_id String 
   cart_id String
   address_id String
-  quantity Int
-  price Int
+  status Boolean
   user users @relation(fields: [user_id] , references: [id])
   product products @relation(fields: [product_id] , references: [id])
   cart cart @relation(fields: [cart_id] , references: [id])
   address address @relation(fields: [address_id] , references: [id])
+  ordered_product ordered_products?
+  order_session order_session?
+}
+
+model ordered_products {
+  product_id String
+  order_id String @unique
+  price Int
+  qunatity Int
+  product products @relation(fields: [product_id] , references: [id])
+  order order @relation(fields: [order_id] , references: [id])
+  @@id([product_id , order_id])
+}
+
+model order_session {
+  id String @id @default(uuid())
+  order_id String @unique
+  user_id String
+  initiated_at DateTime
+  closed_at DateTime
+  completed Boolean
+  user users @relation(fields: [user_id] , references: [id])
+  order order @relation(fields: [order_id] , references: [id])
 }
 
 
