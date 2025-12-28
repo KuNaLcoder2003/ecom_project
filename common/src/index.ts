@@ -33,14 +33,17 @@ export const cart = z.object({
 })
 
 export const order = z.object({
+    id: z.string().optional(),
     user_id: z.string(),
     product_id: z.string(),
+    address_id: z.string(),
+    cart_id: z.string(),
 })
 
 export const ProductImages = z.object({
     id: z.string(),
     image_url: z.string(),
-    product_id: z.string()
+    product_id: z.string(),
 })
 export const Product_ProductImages = z.object({
     id: z.string(),
