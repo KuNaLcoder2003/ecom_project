@@ -1,4 +1,4 @@
-
+import type { NavigateFunction } from "react-router-dom";
 
 interface ProductImage {
     id: string;
@@ -40,7 +40,7 @@ interface Product {
 //     error: string
 // }
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
-const getUnavailable = async (cart: Cart[]) => {
+const getUnavailable = async (cart: Cart[], navigate: NavigateFunction) => {
     try {
         const token = localStorage.getItem('token') as string
         const response = await fetch(`${BACKEND_URL}/cart/checkout`, {
@@ -54,9 +54,14 @@ const getUnavailable = async (cart: Cart[]) => {
             })
         })
         const data = await response.json();
+        if (data.valid) {
+            navigate("/order")
+            return null
+        }
         if (!data.valid && data.unavailable) {
             return data.unavailable as Response[]
-        } else {
+        }
+        else {
             return null
         }
     } catch (error) {
