@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import getUnavailable from "../functions/getUnavailable";
 import toast from "react-hot-toast";
+import { useNavigate } from "react-router-dom";
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 interface ProductImage {
     id: string;
@@ -26,6 +27,7 @@ const useCart = () => {
     const [route, setRoute] = useState<boolean>(false);
     const [error, setError] = useState<string>("");
     const [unavailble, setUnavailable] = useState<Response_Unavailable[]>();
+    const navigate = useNavigate()
     useEffect(() => {
         setLoading(true);
         const token = localStorage.getItem('token')
@@ -55,15 +57,14 @@ const useCart = () => {
     const handleCheckout = async (cart: Cart[]) => {
         setLoadingUnavailable(true);
         try {
-            const unavailble = await getUnavailable(cart)
+            const unavailble = await getUnavailable(cart, navigate)
             if (!unavailble || unavailble == null) {
                 setUnavailable([]);
                 toast.error("Unable to checkout");
                 setRoute(false);
             } else if (unavailble.length == 0) {
                 setUnavailable([]);
-                toast.error("Unable to checkout");
-                setRoute(false);
+                setRoute(true);
             } else {
                 setUnavailable(unavailble);
                 const updated_cart = cart.map(item => {
@@ -76,7 +77,7 @@ const useCart = () => {
                     return temp
                 })
                 setCart(updated_cart)
-                setRoute(true);
+                setRoute(false);
             }
         } catch (error) {
             setUnavailable([]);
