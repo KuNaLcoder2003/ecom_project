@@ -36,6 +36,7 @@ const Cart: React.FC = () => {
     }
 
     const handleCheckoutButton = async () => {
+
         if (cart?.length == 0 || !cart) {
             return
         } else {
@@ -43,7 +44,7 @@ const Cart: React.FC = () => {
             if (!route) {
                 return
             } else {
-                navigate("/order")
+                navigate('/order')
             }
         }
     }
