@@ -5,6 +5,8 @@ import { sign_in, sign_up, type Sign_In, type Sign_Up } from "@kunaljprsingh/eco
 import getToken from "../function/generateToken.js";
 const userRouter = express.Router();
 import dotenv from "dotenv"
+import authMiddleware from "../middlewares/authMiddleware.js";
+import { ca } from "zod/locales";
 dotenv.config()
 const connectionString = `${process.env.DATABASE_URL}`
 const adapter = new PrismaPg({ connectionString })
@@ -124,6 +126,109 @@ userRouter.post("/signin", async (req: express.Request, res: express.Response) =
             message: "Successfully LoggedIn",
             valid: true,
             token: token
+        })
+    } catch (error) {
+        res.status(500).json({
+            message: "Something went wrong",
+            valid: false
+        })
+    }
+})
+
+userRouter.get("/addresses", authMiddleware, async (req: any, res: express.Response) => {
+    try {
+        const userId = req.userId;
+        if (!userId) {
+            res.status(401).json({
+                message: "Unauthorized"
+            })
+            return
+        }
+        const addresses = await prisma.address.findMany({
+            where: {
+                user_id: userId
+            }
+        })
+        res.status(200).json({
+            addresses: addresses,
+            valid: true
+        })
+    } catch (error) {
+        res.status(500).json({
+            message: "Something went wrong",
+            valid: false
+        })
+    }
+})
+
+userRouter.get("/checkout/details", authMiddleware, async (req: any, res: express.Response) => {
+    try {
+        const userId = req.userId;
+        if (!userId) {
+            res.status(401).json({
+                message: "Unauthorized"
+            })
+            return
+        }
+        const details = await prisma.$transaction(async (tx) => {
+            const cart = await tx.cart.findUnique({
+                where: {
+                    user_id: userId
+                }
+            })
+            const cart_products = await tx.cart_products.findMany({
+                where: {
+                    cart_id: cart?.id
+                },
+                select: {
+                    product_id: true,
+                    qunatity: true,
+                    price: true,
+                }
+            })
+            const product = await tx.products.findMany({
+                where: {
+                    id: {
+                        in: cart_products.map(item => {
+                            return item.product_id
+                        })
+                    }
+                },
+                select: {
+                    product_name: true,
+                    product_description: true,
+                    id: true,
+                    images: true
+                }
+            })
+            const products = product.map(item => {
+                let temp = {};
+                cart_products.map(obj => {
+                    if (obj.product_id == item.id) {
+                        temp = { ...item, qunatity: obj.qunatity, price: obj.price }
+                    }
+                })
+                return temp
+            })
+            return { products, cart_products, cart }
+        })
+        if (!details.cart || !details.cart_products) {
+            res.status(403).json({
+                message: "Cart Unavailable",
+                valid: false
+            })
+            return
+        }
+        if (!details.products) {
+            res.status(403).json({
+                message: "Unable to fetch Products",
+                valid: false
+            })
+            return
+        }
+        res.status(200).json({
+            products: details.products,
+            valid: true
         })
     } catch (error) {
         res.status(500).json({
