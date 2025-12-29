@@ -25,6 +25,5 @@ orderRouter.post('/cart', authMiddleware, async (req: express.Request, res: expr
     }
 })
 
-orderRouter.post('/createSession',)
 
 export default orderRouter;
