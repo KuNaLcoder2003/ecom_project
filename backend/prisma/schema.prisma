@@ -24,6 +24,7 @@ model users{
   cart cart?
   orders order[]
   orser_session order_session[]
+  payment payments[]
 }
 
 model address {
@@ -89,6 +90,7 @@ model order{
   address address @relation(fields: [address_id] , references: [id])
   ordered_product ordered_products?
   order_session order_session?
+  payment payments?
 }
 
 model ordered_products {
@@ -111,6 +113,18 @@ model order_session {
   user users @relation(fields: [user_id] , references: [id])
   order order @relation(fields: [order_id] , references: [id])
 }
+
+model payments {
+  id String @id @default(uuid())
+  order_id String @unique
+  user_id String 
+  amount Int
+  completed Boolean
+  created_at DateTime
+  order order @relation(fields: [order_id] , references: [id])
+  user users @relation(fields: [user_id] , references: [id])
+}
+
 
 
 
