@@ -9,6 +9,7 @@ import Home from './pages/Home'
 import Product from './components/Product'
 import Cart from './components/Cart'
 import CheckOut from './pages/CheckOut'
+import PaymentPage from './pages/PaymentPage'
 
 function App() {
 
@@ -22,6 +23,7 @@ function App() {
         <Route path='/cart' element={<Cart />} />
         <Route path='/product/:id' element={<Product />} />
         <Route path='/order' element={<CheckOut />} />
+        <Route path='/payment/:orderId' element={<PaymentPage />} />
       </Routes>
     </>
   )
