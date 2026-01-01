@@ -48,7 +48,6 @@ model products {
   quantity Int
   images product_images[]
   cart_products cart_products[]
-  order order[]
   ordered_products ordered_products[]
 }
 
@@ -80,22 +79,20 @@ model cart_products {
 model order{
   id String @id @default(uuid())
   user_id String
-  product_id String 
   cart_id String
   address_id String
   status Boolean
   user users @relation(fields: [user_id] , references: [id])
-  product products @relation(fields: [product_id] , references: [id])
   cart cart @relation(fields: [cart_id] , references: [id])
   address address @relation(fields: [address_id] , references: [id])
-  ordered_product ordered_products?
+  ordered_product ordered_products[]
   order_session order_session?
   payment payments?
 }
 
 model ordered_products {
   product_id String
-  order_id String @unique
+  order_id String 
   price Int
   qunatity Int
   product products @relation(fields: [product_id] , references: [id])
@@ -117,6 +114,7 @@ model order_session {
 model payments {
   id String @id @default(uuid())
   order_id String @unique
+  stripe_id String @unique
   user_id String 
   amount Int
   completed Boolean
