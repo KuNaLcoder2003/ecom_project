@@ -1,3 +1,7 @@
+import toast, { Toaster } from "react-hot-toast";
+import useCart from "../hooks/useCart";
+import { useNavigate } from "react-router-dom";
+
 type Address = {
     id: string;
     house_no: string;
@@ -16,8 +20,42 @@ const AddressStep = ({
     selectedAddress: Address | null;
     onSelect: (address: Address) => void;
 }) => {
+    const navigate = useNavigate();
+    const { cart } = useCart();
+    const handleAddress = async () => {
+        if (!selectedAddress) {
+            toast.error("Please select one address")
+            return
+        }
+        if (!cart) {
+            toast.error("Inavlid Request")
+            return
+        }
+        const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
+        const token = localStorage.getItem('token') as string
+        try {
+            const response = await fetch(`${BACKEND_URL}/order/createOrder`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'authorization': token,
+                    'address_id': selectedAddress.id as string,
+                    'cart_id': cart[0].cart_id as string
+                },
+            })
+            const data = await response.json()
+            if (data.order_id) {
+                navigate(`/payment/${data.order_id}`);
+            } else {
+                toast.error(data.message);
+            }
+        } catch (error) {
+            toast.error("Something went wrong")
+        }
+    }
     return (
         <>
+            <Toaster />
             <h2 className="text-2xl font-semibold mb-6">
                 📍 Select Address
             </h2>
@@ -54,7 +92,7 @@ const AddressStep = ({
 
             {selectedAddress && (
                 <div className="mt-6 text-right">
-                    <button className="px-6 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition">
+                    <button onClick={() => handleAddress()} className="px-6 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition">
                         Confirm Address
                     </button>
                 </div>
