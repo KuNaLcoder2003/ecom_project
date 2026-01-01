@@ -26,9 +26,9 @@ orderRouter.post('/cart', authMiddleware, async (req: express.Request, res: expr
     }
 })
 
-orderRouter.post('/createOrder', authMiddleware, async (req: express.Request, res: express.Response) => {
+orderRouter.post('/createOrder', authMiddleware, async (req: any, res: express.Response) => {
     try {
-        const userId = "req.userId";
+        const userId = req.userId;
         const adress_id: string = req.headers.address_id as string;
         const cart_id: string = req.headers.cart_id as string;
         if (!userId) {
@@ -73,17 +73,18 @@ orderRouter.post('/createOrder', authMiddleware, async (req: express.Request, re
             order_id: response.newOrder.id
         })
     } catch (error) {
+        console.log(error)
         res.status(500).json({
             message: "Something went wrong"
         })
     }
 })
 
-orderRouter.post('/payAndConfirm/:orderId', authMiddleware, async (req: express.Request, res: express.Response) => {
+orderRouter.post('/payAndConfirm/:orderId', authMiddleware, async (req: any, res: express.Response) => {
     // this route will create a payment intent and generate a client id for stripe sdk 
     // once the user pays -> webhook will confirm the payment -> if success ,  then decrement the quantity of products ,  if not ->  then roll back changes
     try {
-        const userId = "req.userId";
+        const userId = req.userId;
         const orderId = req.params.orderId;
         if (!userId) {
             res.status(403).json({
@@ -92,14 +93,14 @@ orderRouter.post('/payAndConfirm/:orderId', authMiddleware, async (req: express.
             })
             return
         }
-        const cart = req.body.cart as cart_products[]
-        if (!cart) {
-            res.status(400).json({
-                message: "Bad request",
-                valid: false
-            })
-            return
-        }
+        // const cart = req.body.cart as cart_products[]
+        // if (!cart) {
+        //     res.status(400).json({
+        //         message: "Bad request",
+        //         valid: false
+        //     })
+        //     return
+        // }
 
         const response = await prisma.$transaction(async (tx) => {
             const order = await tx.order.findUnique({
