@@ -3,6 +3,7 @@ import { PrismaPg } from '@prisma/adapter-pg'
 import { cart_products, PrismaClient } from '@prisma/client';
 import authMiddleware from "../middlewares/authMiddleware.js";
 import Stripe from "stripe";
+import { success } from "zod";
 const connectionString = `${process.env.DATABASE_URL}`
 const adapter = new PrismaPg({ connectionString })
 const prisma = new PrismaClient({ adapter });
@@ -59,7 +60,56 @@ orderRouter.post('/createOrder', authMiddleware, async (req: any, res: express.R
                     cart_id: cart_id,
                 }
             })
-            return { newOrder };
+
+            const cart_products = await tx.cart_products.findMany({
+                where: {
+                    cart_id: newOrder.cart_id
+                }
+            })
+            const product_ids = cart_products.map(item => {
+                return item.product_id
+            })
+            if (!cart_products) {
+                throw new Error("Bad request")
+            }
+
+
+
+            const lineItems = cart_products.map(item => {
+                return {
+                    price_data: {
+                        currency: 'inr',
+                        product_data: {
+                            name: item.product_id,
+                        },
+                        unit_amount: item.price * 100,
+                    },
+                    quantity: item.qunatity,
+                }
+            })
+
+            const session = await stripe.checkout.sessions.create({
+                payment_method_types: ["card"],
+                line_items: lineItems,
+                mode: "payment",
+                success_url: 'http://localhost:5173/success',
+                cancel_url: 'http://localhost:5173/fail',
+            })
+
+            if (!session) {
+                throw new Error("Error generating payment")
+            }
+            const payment = await tx.payments.create({
+                data: {
+                    order_id: newOrder.id,
+                    user_id: userId,
+                    amount: cart_products.reduce((sum, b) => sum + b.price * b.qunatity, 0),
+                    completed: false,
+                    created_at: new Date(),
+                    stripe_id: session.id
+                }
+            })
+            return { newOrder, session, payment };
         })
         if (!response.newOrder) {
             res.status(400).json({
@@ -70,7 +120,8 @@ orderRouter.post('/createOrder', authMiddleware, async (req: any, res: express.R
         }
         res.status(200).json({
             message: "Success",
-            order_id: response.newOrder.id
+            order_id: response.newOrder.id,
+            session_url: response.session.url
         })
     } catch (error) {
         console.log(error)
@@ -80,85 +131,103 @@ orderRouter.post('/createOrder', authMiddleware, async (req: any, res: express.R
     }
 })
 
-orderRouter.post('/payAndConfirm/:orderId', authMiddleware, async (req: any, res: express.Response) => {
-    // this route will create a payment intent and generate a client id for stripe sdk 
-    // once the user pays -> webhook will confirm the payment -> if success ,  then decrement the quantity of products ,  if not ->  then roll back changes
-    try {
-        const userId = req.userId;
-        const orderId = req.params.orderId;
-        if (!userId) {
-            res.status(403).json({
-                message: "Unauthorized",
-                valid: false
-            })
-            return
-        }
-        // const cart = req.body.cart as cart_products[]
-        // if (!cart) {
-        //     res.status(400).json({
-        //         message: "Bad request",
-        //         valid: false
-        //     })
-        //     return
-        // }
+// orderRouter.post('/payAndConfirm/:orderId', authMiddleware, async (req: any, res: express.Response) => {
+//     // this route will create a payment intent and generate a client id for stripe sdk 
+//     // once the user pays -> webhook will confirm the payment -> if success ,  then decrement the quantity of products ,  if not ->  then roll back changes
+//     try {
+//         const userId = req.userId;
+//         const orderId = req.params.orderId;
+//         if (!userId) {
+//             res.status(403).json({
+//                 message: "Unauthorized",
+//                 valid: false
+//             })
+//             return
+//         }
+//         // const cart = req.body.cart as cart_products[]
+//         // if (!cart) {
+//         //     res.status(400).json({
+//         //         message: "Bad request",
+//         //         valid: false
+//         //     })
+//         //     return
+//         // }
 
-        const response = await prisma.$transaction(async (tx) => {
-            const order = await tx.order.findUnique({
-                where: {
-                    id: orderId
-                }
-            })
-            const cart_products = await tx.cart_products.findMany({
-                where: {
-                    cart_id: order?.cart_id
-                }
-            })
-            if (!order || !cart_products) {
-                throw new Error("Bad request")
-            }
-            const stripe_response = await stripe.paymentIntents.create({
-                amount: cart_products.reduce((sum, b) => sum + b.price * b.qunatity, 0),
-                currency: "inr",
-                automatic_payment_methods: {
-                    enabled: true
-                },
-                metadata: {
-                    orderId: order.id,
-                    userId: userId,
-                }
-            })
-            if (!stripe_response) {
-                throw new Error("Error generating payment")
-            }
-            const payment = await tx.payments.create({
-                data: {
-                    order_id: order.id,
-                    user_id: userId,
-                    amount: cart_products.reduce((sum, b) => sum + b.price * b.qunatity, 0),
-                    completed: false,
-                    created_at: new Date(),
-                    stripe_id: stripe_response.id
-                }
-            })
-            return { stripe_response, payment }
-        })
-        if (!response.stripe_response) {
-            res.status(403).json({
-                message: "Unable to create payment",
-                valid: false
-            })
-            return
-        }
-        res.status(200).json({
-            clientSecret: response.stripe_response.client_secret
-        })
-    } catch (error) {
-        res.status(500).json({
-            error: error,
-            message: "Something went wrong"
-        })
-    }
-})
+//         const response = await prisma.$transaction(async (tx) => {
+//             const order = await tx.order.findUnique({
+//                 where: {
+//                     id: orderId
+//                 }
+//             })
+//             const cart_products = await tx.cart_products.findMany({
+//                 where: {
+//                     cart_id: order?.cart_id
+//                 }
+//             })
+//             const product_ids = cart_products.map(item => {
+//                 return item.product_id
+//             })
+//             if (!order || !cart_products) {
+//                 throw new Error("Bad request")
+//             }
+
+
+
+//             const lineItems = cart_products.map(item => {
+//                 return {
+//                     price_data: {
+//                         currency: 'inr',
+//                         product_data: {
+//                             name: item.product_id,
+//                         },
+//                         unit_amount: item.price * 100,
+//                     },
+//                     quantity: item.qunatity,
+//                 }
+//             })
+
+//             const session = await stripe.checkout.sessions.create({
+//                 payment_method_types: ["card"],
+//                 line_items: lineItems,
+//                 mode: "payment",
+//                 success_url: 'http://localhost:5173/success',
+//                 cancel_url: 'http://localhost:5173/fail',
+//             })
+
+//             if (!session) {
+//                 throw new Error("Error generating payment")
+//             }
+//             const payment = await tx.payments.create({
+//                 data: {
+//                     order_id: order.id,
+//                     user_id: userId,
+//                     amount: cart_products.reduce((sum, b) => sum + b.price * b.qunatity, 0),
+//                     completed: false,
+//                     created_at: new Date(),
+//                     stripe_id: session.id
+//                 }
+//             })
+//             return { session, payment }
+//         }, { timeout: 20000, maxWait: 10000 })
+//         console.log(response.session);
+//         if (!response.session) {
+//             res.status(403).json({
+//                 message: "Unable to create payment",
+//                 valid: false
+//             })
+//             return
+//         }
+//         res.status(200).json({
+//             clientSecret: response.session.id
+//         })
+//     } catch (error) {
+//         console.log(error);
+//         res.status(500).json({
+//             error: error,
+//             message: "Something went wrong"
+//         })
+//     }
+// })
 
 
 export default orderRouter;
