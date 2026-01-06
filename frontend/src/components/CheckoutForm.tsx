@@ -26,10 +26,34 @@ function CheckoutForm() {
     };
 
     return (
-        <form onSubmit={handleSubmit}>
-            <PaymentElement />
-            <button type="submit">Pay</button>
+        <form
+            onSubmit={handleSubmit}
+            className="w-full max-w-md bg-white rounded-xl shadow-lg p-6 space-y-6"
+        >
+            {/* Stripe Payment UI */}
+            <div className="border rounded-lg p-4">
+                <PaymentElement />
+            </div>
+
+            {/* Pay Button */}
+            <button
+                type="submit"
+                disabled={!stripe}
+                className="
+      w-full py-3 rounded-lg font-semibold text-white
+      bg-black hover:bg-gray-800 transition
+      disabled:opacity-50 disabled:cursor-not-allowed
+    "
+            >
+                Pay Now
+            </button>
+
+            {/* Small trust text */}
+            <p className="text-xs text-center text-gray-500">
+                Your payment is securely processed by Stripe
+            </p>
         </form>
+
     );
 }
 export default CheckoutForm;
