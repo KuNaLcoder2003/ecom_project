@@ -1,6 +1,6 @@
 import toast, { Toaster } from "react-hot-toast";
 import useCart from "../hooks/useCart";
-import { useNavigate } from "react-router-dom";
+import { loadStripe } from "@stripe/stripe-js";
 
 type Address = {
     id: string;
@@ -20,9 +20,9 @@ const AddressStep = ({
     selectedAddress: Address | null;
     onSelect: (address: Address) => void;
 }) => {
-    const navigate = useNavigate();
     const { cart } = useCart();
     const handleAddress = async () => {
+
         if (!selectedAddress) {
             toast.error("Please select one address")
             return
@@ -44,8 +44,13 @@ const AddressStep = ({
                 },
             })
             const data = await response.json()
-            if (data.order_id) {
-                navigate(`/payment/${data.order_id}`);
+            if (data.order_id && data.session_url) {
+                const stripe = await loadStripe('pk_test_51RcKdXR48JIxDpQaaxdy5RNiUohNvfvx2lEiazKNohgp3A18SFiRYHbhcHp87idSOX7ui3SQgRsQdNGUOuXEgUbY00RHbl0TSd')
+                if (!stripe) {
+                    toast.error("Stripe failed to load");
+                    return;
+                }
+                window.location.href = data.session_url;
             } else {
                 toast.error(data.message);
             }
