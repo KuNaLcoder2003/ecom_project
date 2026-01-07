@@ -94,6 +94,11 @@ orderRouter.post('/createOrder', authMiddleware, async (req: any, res: express.R
                 mode: "payment",
                 success_url: 'http://localhost:5173/success',
                 cancel_url: 'http://localhost:5173/fail',
+                metadata: {
+                    order_id: newOrder.id,
+                    cart_id: cart_id,
+                    user_id: userId
+                }
             })
 
             if (!session) {
@@ -110,7 +115,7 @@ orderRouter.post('/createOrder', authMiddleware, async (req: any, res: express.R
                 }
             })
             return { newOrder, session, payment };
-        })
+        }, { timeout: 20000, maxWait: 10000 })
         if (!response.newOrder) {
             res.status(400).json({
                 message: "Unable to create order",
