@@ -12,8 +12,121 @@ const adapter = new PrismaPg({ connectionString })
 const prisma = new PrismaClient({ adapter });
 const app = express();
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
+const STRIPE_WEBHOOK_SECRET_KEY = process.env.STRIPE_WEBHOOK_SECRET!;
 app.use(cors());
+app.post('/webhook/verify', express.raw({ type: 'application/json' }), async (req: express.Request, res: express.Response) => {
+    let event: Stripe.Event
+    try {
+        const signature = req.headers['stripe-signature'] as string;
+        event = stripe.webhooks.constructEvent(
+            req.body,
+            signature,
+            STRIPE_WEBHOOK_SECRET_KEY
+        )
+    } catch (err) {
+        console.log(`⚠️ Webhook signature verification failed.`, err);
+        return res.sendStatus(400);
+    }
+
+    if (event.type == 'checkout.session.completed') {
+        try {
+            const response_object = event.data.object;
+            const order_id = response_object.metadata?.order_id
+            if (!order_id) {
+                return res.status(400).send('Missing order_id');
+            }
+
+            const response = await prisma.$transaction(async (tx) => {
+                const order = await tx.order.findUnique({
+                    where: {
+                        id: order_id
+                    },
+                    select: {
+                        cart_id: true,
+                        status: true
+                    }
+                })
+                if (!order) throw new Error('Order not found');
+                if (order?.status === true) {
+                    return;
+                }
+
+                const cart_products = await tx.cart_products.findMany({
+                    where: {
+                        cart_id: order?.cart_id
+                    },
+
+                })
+
+                const updated = await Promise.all(cart_products.map(async (item) => {
+                    const product = await tx.products.findUnique({
+                        where: { id: item.product_id },
+                        select: { quantity: true },
+                    });
+                    if (!product) {
+                        throw new Error('Product not found');
+                    }
+
+                    if (product.quantity < item.qunatity) {
+                        throw new Error('Insufficient stock');
+                    }
+
+                    const result = await tx.products.updateMany({
+                        where: {
+                            id: item.product_id,
+                            quantity: { gte: item.qunatity }
+                        },
+                        data: {
+                            quantity: {
+                                decrement: item.qunatity
+                            }
+                        }
+                    })
+                    if (result.count == 0) {
+                        throw new Error('Insufficient stock');
+                    }
+                    return result
+                }))
+                if (!updated) {
+                    throw new Error('Unable to update product');
+                }
+
+                await tx.order.update({
+                    where: {
+                        id: order_id
+                    },
+                    data: {
+                        status: true
+                    }
+                })
+                await tx.payments.update({
+                    where: {
+                        order_id: order_id
+                    },
+                    data: {
+                        completed: true
+                    }
+                })
+                return { updated }
+
+            }, { timeout: 20000, maxWait: 10000 })
+            if (!response || !response?.updated) {
+                return res.status(200).json({ received: false });
+            }
+            return res.status(200).json({ received: true });
+        } catch (err) {
+
+        }
+    }
+
+    res.status(200).json({
+        message: 'Order confirmed',
+        valid: true
+    })
+})
 app.use(express.json());
+
+
 
 async function finalizeOrder(intent: Stripe.PaymentIntent) {
     const orderId = intent.metadata.order_id
