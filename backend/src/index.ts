@@ -6,6 +6,7 @@ import dotenv from "dotenv"
 import bodyParser from "body-parser";
 import Stripe from "stripe";
 import { PrismaClient } from "@prisma/client";
+import sendMail from "./function/mail.js";
 dotenv.config()
 const connectionString = `${process.env.DATABASE_URL}`
 const adapter = new PrismaPg({ connectionString })
@@ -30,8 +31,17 @@ app.post('/webhook/verify', express.raw({ type: 'application/json' }), async (re
 
     if (event.type == 'checkout.session.completed') {
         try {
+            let total;
             const response_object = event.data.object;
             const order_id = response_object.metadata?.order_id
+            const user_id = response_object.metadata?.user_id;
+            const user = await prisma.users.findUnique({
+                where: {
+                    id: user_id
+                }
+            })
+            const cart_id = response_object.metadata?.cart_id;
+
             if (!order_id) {
                 return res.status(400).send('Missing order_id');
             }
@@ -57,6 +67,7 @@ app.post('/webhook/verify', express.raw({ type: 'application/json' }), async (re
                     },
 
                 })
+                total = cart_products.reduce((sum, curr) => sum + curr.price * curr.qunatity, 0)
 
                 const updated = await Promise.all(cart_products.map(async (item) => {
                     const product = await tx.products.findUnique({
@@ -107,16 +118,104 @@ app.post('/webhook/verify', express.raw({ type: 'application/json' }), async (re
                         completed: true
                     }
                 })
+                await tx.cart.delete({
+                    where: {
+                        id: cart_id
+                    }
+                })
+                await tx.cart_products.deleteMany({
+                    where: {
+                        cart_id: cart_id
+                    }
+                })
                 return { updated }
 
             }, { timeout: 20000, maxWait: 10000 })
             if (!response || !response?.updated) {
                 return res.status(200).json({ received: false });
             }
+            await sendMail(user?.email!, `<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Order Confirmation</title>
+  </head>
+
+  <body style="margin: 0; padding: 0; background-color: #f4f4f4; font-family: Arial, sans-serif;">
+    <table width="100%" cellpadding="0" cellspacing="0">
+      <tr>
+        <td align="center" style="padding: 20px 0;">
+          
+          <!-- Main Container -->
+          <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 8px; overflow: hidden;">
+            
+            <!-- Header -->
+            <tr>
+              <td style="background-color: #4f46e5; padding: 20px; text-align: center;">
+                <h1 style="color: #ffffff; margin: 0;">Order Confirmed 🎉</h1>
+              </td>
+            </tr>
+
+            <!-- Content -->
+            <tr>
+              <td style="padding: 30px;">
+                <p style="font-size: 16px; color: #333333;">
+                  Hi <strong>Customer</strong>,
+                </p>
+
+                <p style="font-size: 16px; color: #333333;">
+                  Thank you for your purchase! Your order has been successfully placed.
+                </p>
+
+                <!-- Order Details -->
+                <table width="100%" cellpadding="10" cellspacing="0" style="margin: 20px 0; border: 1px solid #e5e7eb; border-radius: 6px;">
+                  <tr style="background-color: #f9fafb;">
+                    <td style="font-weight: bold; color: #374151;">Order ID</td>
+                    <td style="color: #111827;">${order_id}</td>
+                  </tr>
+                  <tr>
+                    <td style="font-weight: bold; color: #374151;">Total Amount Paid</td>
+                    <td style="color: #111827;">₹ ${total}</td>
+                  </tr>
+                </table>
+
+                <p style="font-size: 16px; color: #333333;">
+                  We’ll notify you once your order is shipped.
+                </p>
+
+                <p style="font-size: 16px; color: #333333;">
+                  If you have any questions, feel free to reach out to our support team.
+                </p>
+
+                <p style="font-size: 16px; color: #333333;">
+                  Regards,<br />
+                  <strong>Your Store Team</strong>
+                </p>
+              </td>
+            </tr>
+
+            <!-- Footer -->
+            <tr>
+              <td style="background-color: #f9fafb; padding: 15px; text-align: center; font-size: 14px; color: #6b7280;">
+                © 2026 Your Store. All rights reserved.
+              </td>
+            </tr>
+
+          </table>
+
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>
+` , "Order Confirmed")
             return res.status(200).json({ received: true });
         } catch (err) {
 
         }
+    }
+    if (event.type == 'checkout.session.async_payment_failed') {
+
     }
 
     res.status(200).json({
