@@ -25,6 +25,7 @@ function App() {
         <Route path='/order' element={<CheckOut />} />
         <Route path='/payment/:orderId' element={<PaymentPage />} />
         <Route path='/success' element={<p>Success Page</p>} />
+        <Route path='/failure' element={<p>Failure Page</p>} />
       </Routes>
     </>
   )
