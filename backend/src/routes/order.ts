@@ -4,6 +4,7 @@ import { cart_products, PrismaClient } from '@prisma/client';
 import authMiddleware from "../middlewares/authMiddleware.js";
 import Stripe from "stripe";
 import { success } from "zod";
+import adminMiddleware from "../middlewares/adminMiddleware.js";
 const connectionString = `${process.env.DATABASE_URL}`
 const adapter = new PrismaPg({ connectionString })
 const prisma = new PrismaClient({ adapter });
@@ -132,6 +133,54 @@ orderRouter.post('/createOrder', authMiddleware, async (req: any, res: express.R
         console.log(error)
         res.status(500).json({
             message: "Something went wrong"
+        })
+    }
+})
+
+orderRouter.post('/getAllOrders', adminMiddleware, async (req: express.Request, res: express.Response) => {
+    try {
+        const role = "req.role";
+        if (!role) {
+            res.status(401).json({
+                message: 'Unauthorized'
+            })
+            return
+        }
+        const response = await prisma.$transaction(async (tx) => {
+            const orders = await tx.order.findMany();
+            console.log(orders)
+
+            const ordered_products = await tx.ordered_products.findMany({
+                where: {
+                    order_id: {
+                        in: orders.map(item => { return item.id })
+                    }
+                },
+                select: {
+                    product: true, // this object will have the quantity that is in stock
+                    order: true,
+                    qunatity: true // this quantity is the qunatity ordered by user
+                }
+            })
+            return { ordered_products }
+        }, { timeout: 20000, maxWait: 10000 })
+        console.log(response.ordered_products)
+        if (!response || !response.ordered_products) {
+            res.status(403).json({
+                message: 'Unable to fetch orders',
+                valid: false
+            })
+            return
+        }
+        res.status(200).json({
+            orders: response.ordered_products,
+            valid: true
+        })
+    } catch (error) {
+        res.status(500).json({
+            error: error,
+            message: 'Something went wrong',
+            valid: false
         })
     }
 })
