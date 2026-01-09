@@ -159,10 +159,12 @@ orderRouter.post('/getAllOrders', adminMiddleware, async (req: express.Request, 
                 select: {
                     product: true, // this object will have the quantity that is in stock
                     order: true,
-                    qunatity: true // this quantity is the qunatity ordered by user
+                    qunatity: true, // this quantity is the qunatity ordered by user,
+                    price: true,
+                    order_id: true
                 }
             })
-            return { ordered_products }
+            return { ordered_products, orders }
         }, { timeout: 20000, maxWait: 10000 })
         console.log(response.ordered_products)
         if (!response || !response.ordered_products) {
@@ -173,7 +175,8 @@ orderRouter.post('/getAllOrders', adminMiddleware, async (req: express.Request, 
             return
         }
         res.status(200).json({
-            orders: response.ordered_products,
+            order: response.orders,
+            ordered_products: response.ordered_products,
             valid: true
         })
     } catch (error) {
@@ -185,103 +188,7 @@ orderRouter.post('/getAllOrders', adminMiddleware, async (req: express.Request, 
     }
 })
 
-// orderRouter.post('/payAndConfirm/:orderId', authMiddleware, async (req: any, res: express.Response) => {
-//     // this route will create a payment intent and generate a client id for stripe sdk 
-//     // once the user pays -> webhook will confirm the payment -> if success ,  then decrement the quantity of products ,  if not ->  then roll back changes
-//     try {
-//         const userId = req.userId;
-//         const orderId = req.params.orderId;
-//         if (!userId) {
-//             res.status(403).json({
-//                 message: "Unauthorized",
-//                 valid: false
-//             })
-//             return
-//         }
-//         // const cart = req.body.cart as cart_products[]
-//         // if (!cart) {
-//         //     res.status(400).json({
-//         //         message: "Bad request",
-//         //         valid: false
-//         //     })
-//         //     return
-//         // }
 
-//         const response = await prisma.$transaction(async (tx) => {
-//             const order = await tx.order.findUnique({
-//                 where: {
-//                     id: orderId
-//                 }
-//             })
-//             const cart_products = await tx.cart_products.findMany({
-//                 where: {
-//                     cart_id: order?.cart_id
-//                 }
-//             })
-//             const product_ids = cart_products.map(item => {
-//                 return item.product_id
-//             })
-//             if (!order || !cart_products) {
-//                 throw new Error("Bad request")
-//             }
-
-
-
-//             const lineItems = cart_products.map(item => {
-//                 return {
-//                     price_data: {
-//                         currency: 'inr',
-//                         product_data: {
-//                             name: item.product_id,
-//                         },
-//                         unit_amount: item.price * 100,
-//                     },
-//                     quantity: item.qunatity,
-//                 }
-//             })
-
-//             const session = await stripe.checkout.sessions.create({
-//                 payment_method_types: ["card"],
-//                 line_items: lineItems,
-//                 mode: "payment",
-//                 success_url: 'http://localhost:5173/success',
-//                 cancel_url: 'http://localhost:5173/fail',
-//             })
-
-//             if (!session) {
-//                 throw new Error("Error generating payment")
-//             }
-//             const payment = await tx.payments.create({
-//                 data: {
-//                     order_id: order.id,
-//                     user_id: userId,
-//                     amount: cart_products.reduce((sum, b) => sum + b.price * b.qunatity, 0),
-//                     completed: false,
-//                     created_at: new Date(),
-//                     stripe_id: session.id
-//                 }
-//             })
-//             return { session, payment }
-//         }, { timeout: 20000, maxWait: 10000 })
-//         console.log(response.session);
-//         if (!response.session) {
-//             res.status(403).json({
-//                 message: "Unable to create payment",
-//                 valid: false
-//             })
-//             return
-//         }
-//         res.status(200).json({
-//             clientSecret: response.session.id
-//         })
-//     } catch (error) {
-//         console.log(error);
-//         res.status(500).json({
-//             error: error,
-//             message: "Something went wrong"
-//         })
-//     }
-// })
 
 
 export default orderRouter;
