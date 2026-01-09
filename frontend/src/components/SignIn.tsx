@@ -23,7 +23,7 @@ export default function SignInForm() {
 
     const handleSubmit = async (e: FormEvent) => {
         e.preventDefault();
-        const { token, message } = await signin(formData)
+        const { token, message } = await signin(formData, "user")
         if (!token) {
             toast.error(message);
         } else {
