@@ -10,6 +10,8 @@ import Product from './components/Product'
 import Cart from './components/Cart'
 import CheckOut from './pages/CheckOut'
 import PaymentPage from './pages/PaymentPage'
+import AdminDashBoard from './pages/AdminDashBoard'
+import AdminSignin from './components/AdminSignin'
 
 function App() {
 
@@ -26,6 +28,8 @@ function App() {
         <Route path='/payment/:orderId' element={<PaymentPage />} />
         <Route path='/success' element={<p>Success Page</p>} />
         <Route path='/failure' element={<p>Failure Page</p>} />
+        <Route path='/admin' element={<AdminDashBoard />} />
+        <Route path='/admin/signin' element={<AdminSignin />} />
       </Routes>
     </>
   )
