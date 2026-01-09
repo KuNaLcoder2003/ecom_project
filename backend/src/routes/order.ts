@@ -150,24 +150,11 @@ orderRouter.post('/getAllOrders', adminMiddleware, async (req: express.Request, 
             const orders = await tx.order.findMany();
             console.log(orders)
 
-            const ordered_products = await tx.ordered_products.findMany({
-                where: {
-                    order_id: {
-                        in: orders.map(item => { return item.id })
-                    }
-                },
-                select: {
-                    product: true, // this object will have the quantity that is in stock
-                    order: true,
-                    qunatity: true, // this quantity is the qunatity ordered by user,
-                    price: true,
-                    order_id: true
-                }
-            })
-            return { ordered_products, orders }
+
+            return { orders }
         }, { timeout: 20000, maxWait: 10000 })
-        console.log(response.ordered_products)
-        if (!response || !response.ordered_products) {
+
+        if (!response || !response.orders) {
             res.status(403).json({
                 message: 'Unable to fetch orders',
                 valid: false
@@ -176,13 +163,71 @@ orderRouter.post('/getAllOrders', adminMiddleware, async (req: express.Request, 
         }
         res.status(200).json({
             order: response.orders,
-            ordered_products: response.ordered_products,
             valid: true
         })
     } catch (error) {
         res.status(500).json({
             error: error,
             message: 'Something went wrong',
+            valid: false
+        })
+    }
+})
+
+orderRouter.post('/getOrderDetails/:orderId', adminMiddleware, async (req: express.Request, res: express.Response) => {
+    try {
+        const orderId = req.params.orderId;
+        if (!orderId) {
+            res.status(400).json({
+                message: "Bad request",
+                valid: false
+            })
+            return
+        }
+        const response = await prisma.$transaction(async (tx) => {
+            const ordered_products = await tx.ordered_products.findMany({
+                where: {
+                    order_id: orderId
+                },
+                select: {
+                    product: true,
+                    price: true,
+                    qunatity: true
+                }
+            })
+            const products_images = await tx.product_images.findMany({
+                where: {
+                    product_id: {
+                        in: ordered_products.map(item => { return item.product.id })
+                    }
+                }
+            })
+
+            return { ordered_products, products_images }
+        })
+        if (!response || !response.ordered_products || !response.products_images) {
+            res.status(403).json({
+                message: "Unable to fetch ordered products",
+                valid: false
+            })
+            return
+        }
+        let merged_arr = response.ordered_products.map(item => {
+            let temp_obj = { ...item, images: [""] }
+            response.products_images.map(obj => {
+                if (obj.product_id == item.product.id) {
+                    temp_obj.images = [...temp_obj.images, obj.image_url].filter(item => item.length > 0)
+                }
+            })
+            return temp_obj;
+        })
+        res.status(200).json({
+            ordered_products: merged_arr,
+            valid: true
+        })
+    } catch (error) {
+        res.status(500).json({
+            message: "Something went wrong",
             valid: false
         })
     }
