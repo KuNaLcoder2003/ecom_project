@@ -238,4 +238,46 @@ userRouter.get("/checkout/details", authMiddleware, async (req: any, res: expres
     }
 })
 
+userRouter.post('/admin/signin', async (req: express.Request, res: express.Response) => {
+    try {
+        const { email, password } = req.body;
+        if (!email || !password) {
+            res.status(400).json({
+                message: "Bad request"
+            })
+            return
+        }
+        if (email !== "kunalindia59@gmail.com") {
+            res.status(401).json({
+                message: "Unauthorized , wrong email",
+                valid: false
+            })
+            return
+        }
+        if (password !== "KSJpr#Raj@45") {
+            res.status(401).json({
+                message: "Unauthorized, wrong password",
+                valid: false
+            })
+            return
+        }
+        const token = getToken(email, "Admin")
+        if (!token) {
+            res.status(403).json({
+                message: "Unable to signup",
+                valid: false
+            })
+        }
+        res.status(200).json({
+            message: 'Logged in as admin',
+            token: token,
+            valid: true
+        })
+    } catch (error) {
+        res.status(500).json({
+            message: 'Something went wrong'
+        })
+    }
+})
+
 export default userRouter;
