@@ -3,8 +3,8 @@ interface SignInReturn {
     token: string | null,
     message: string
 }
-const signin = async (userCred: Sign_In): Promise<SignInReturn> => {
-    const SIGNIN_URL = `${import.meta.env.VITE_BACKEND_URL}/user/signin`;
+const signin = async (userCred: Sign_In, role: string): Promise<SignInReturn> => {
+    const SIGNIN_URL = role == "Admin" ? `${import.meta.env.VITE_BACKEND_URL}/user/admin/signin` : `${import.meta.env.VITE_BACKEND_URL}/user/signin`;
     try {
         const response = await fetch(SIGNIN_URL, {
             method: "POST",
