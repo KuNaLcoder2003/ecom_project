@@ -18,22 +18,10 @@ const prisma = new PrismaClient({
 
 productsRouter.post('/', upload.array('images'), async (req: express.Request, res: express.Response) => {
     try {
-        const product_deatils: Product = req.body;
+        const { product_description, product_name, price, qunatity }: Product = req.body;
         const images = req.files as Express.Multer.File[]
-        let body = {
-            product_name: product_deatils.product_name,
-            product_description: product_deatils.product_description,
-            price: Number(product_deatils.price),
-            qunatity: Number(product_deatils.qunatity)
-        }
+
         let buffer: Buffer[] = [];
-        const { success } = post_product.safeParse(body);
-        if (!success) {
-            res.status(403).json({
-                message: "Invalid Types"
-            })
-            return
-        }
         if (!images || images.length == 0) {
             res.status(403).json({
                 message: "Provide at least one image"
@@ -57,10 +45,10 @@ productsRouter.post('/', upload.array('images'), async (req: express.Request, re
         const response = await prisma.$transaction(async (tx) => {
             const product = await tx.products.create({
                 data: {
-                    product_name: product_deatils.product_name,
-                    product_description: product_deatils.product_description,
-                    price: Number(product_deatils.price),
-                    quantity: Number(product_deatils.qunatity),
+                    product_name: product_name,
+                    product_description: product_description,
+                    price: Number(price),
+                    quantity: Number(qunatity),
                 }
             });
 
