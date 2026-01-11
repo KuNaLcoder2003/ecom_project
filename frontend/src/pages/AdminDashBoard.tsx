@@ -1,6 +1,7 @@
 import type React from "react";
 import { useState } from "react";
 import AdminOrders from "../components/AdminOrder";
+import AdminProducts from "../components/AdminProducts";
 type Tabs = "Home" | "Orders" | "Products" | "Payments" | "Users"
 const AdminDashBoard: React.FC = () => {
     const [currentTab, setCurrentTab] = useState<Tabs>("Home");
@@ -28,7 +29,11 @@ const AdminDashBoard: React.FC = () => {
                     currentTab == "Payments" && <h1 className="text-2xl font-bold">Payments</h1>
                 }
                 {
-                    currentTab == "Products" && <h1 className="text-2xl font-bold">Products</h1>
+                    currentTab == "Products" &&
+                    <>
+                        <h1 className="text-2xl font-bold">Products</h1>
+                        <AdminProducts />
+                    </>
                 }
 
                 {
