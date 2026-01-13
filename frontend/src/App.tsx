@@ -12,6 +12,7 @@ import CheckOut from './pages/CheckOut'
 import PaymentPage from './pages/PaymentPage'
 import AdminDashBoard from './pages/AdminDashBoard'
 import AdminSignin from './components/AdminSignin'
+import ProductList from './components/ProductList'
 
 function App() {
 
@@ -30,6 +31,7 @@ function App() {
         <Route path='/failure' element={<p>Failure Page</p>} />
         <Route path='/admin' element={<AdminDashBoard />} />
         <Route path='/admin/signin' element={<AdminSignin />} />
+        <Route path='/product/search/:debouncedWord' element={<ProductList />} />
       </Routes>
     </>
   )
