@@ -14,7 +14,20 @@ const upload = multer({ storage: storage })
 const prisma = new PrismaClient({
     adapter
 })
+interface ProductImage {
+    id: string;
+    image_url: string;
+    product_id: string;
+}
 
+interface Product_Type {
+    id: string;
+    product_name: string;
+    product_description: string;
+    price: number;
+    quantity: number;
+    images: ProductImage[];
+}
 
 productsRouter.post('/', upload.array('images'), async (req: express.Request, res: express.Response) => {
     try {
@@ -163,6 +176,71 @@ productsRouter.get('/:productId', async (req: express.Request, res: express.Resp
         })
     } catch (error) {
         res.status(500).json({
+            message: "Something went wrong",
+            valid: false
+        })
+    }
+})
+
+productsRouter.get('/getProduct/:keyword', async (req: express.Request, res: express.Response) => {
+    try {
+        const word = req.params.keyword;
+        const response = await prisma.$transaction(async (tx) => {
+            const products = await tx.products.findMany({
+                where: {
+                    product_name: {
+                        startsWith: word
+                    }
+                }
+            })
+            return { products }
+        }, { timeout: 20000, maxWait: 10000 })
+
+        if (!response || !response.products) {
+            res.status(403).json({
+                message: 'Unable to fetch the products at the moment',
+                valid: false,
+            })
+            return
+        }
+        const ids = response.products.map(item => {
+            return item.id
+        })
+
+        const product_images = await prisma.product_images.findMany({
+            where: {
+                product_id: {
+                    in: ids
+                }
+            }
+        })
+
+        if (!product_images) {
+            res.status(403).json({
+                message: 'Unable to fetch the products at the moment',
+                valid: false,
+            })
+            return
+        }
+
+        const products = response.products.map(item => {
+            let temp: Product_Type = { ...item, images: [] }
+            product_images.map(obj => {
+                if (obj.product_id == item.id) {
+                    temp.images = [...temp.images, obj]
+                }
+            })
+            return temp;
+        })
+
+        res.status(200).json({
+            products: products,
+            valid: true
+        })
+
+    } catch (error) {
+        res.status(500).json({
+            error: error,
             message: "Something went wrong",
             valid: false
         })
