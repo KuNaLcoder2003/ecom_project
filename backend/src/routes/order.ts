@@ -233,6 +233,13 @@ orderRouter.post('/getOrderDetails/:orderId', adminMiddleware, async (req: expre
     }
 })
 
+orderRouter.get('/orderHistrory', authMiddleware, async (req: express.Request, res: express.Response) => {
+    try {
+
+    } catch (error) {
+
+    }
+})
 
 
 
