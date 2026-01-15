@@ -204,7 +204,7 @@ orderRouter.post('/getOrderDetails/:orderId', adminMiddleware, async (req: expre
             })
 
             return { ordered_products, products_images }
-        })
+        }, { timeout: 20000, maxWait: 10000 })
         if (!response || !response.ordered_products || !response.products_images) {
             res.status(403).json({
                 message: "Unable to fetch ordered products",
@@ -235,9 +235,31 @@ orderRouter.post('/getOrderDetails/:orderId', adminMiddleware, async (req: expre
 
 orderRouter.get('/orderHistrory', authMiddleware, async (req: express.Request, res: express.Response) => {
     try {
-
+        const userId = "req.userId"
+        const response = await prisma.$transaction(async (tx) => {
+            const orders = await tx.order.findMany({
+                where: {
+                    user_id: userId
+                }
+            })
+            return { orders }
+        }, { timeout: 20000, maxWait: 10000 })
+        if (!response || !response.orders) {
+            res.status(403).json({
+                message: "Unable to get order history",
+                valid: false
+            })
+            return
+        }
+        res.status(200).json({
+            orders: response.orders,
+            valid: true
+        })
     } catch (error) {
-
+        res.status(500).json({
+            message: "Something went wrong",
+            valid: false
+        })
     }
 })
 
