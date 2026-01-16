@@ -1,7 +1,7 @@
 
 import { Route, Routes } from 'react-router-dom'
 import './App.css'
-
+import { ReactLenis } from 'lenis/react'
 import SignupForm from './components/SignUp'
 import SignInForm from './components/SignIn'
 import Home from './pages/Home'
@@ -19,6 +19,7 @@ function App() {
 
   return (
     <>
+      <ReactLenis root />
       <Routes>
         <Route path='/' element={<Home />} />
         <Route path='/signup' element={<SignupForm />} />
