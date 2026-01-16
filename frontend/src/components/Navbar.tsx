@@ -1,112 +1,92 @@
 import type React from "react";
 import { useNavigate } from "react-router-dom";
 import useAuth from "../hooks/useAuth";
-import { LogIn, LogOut, Search, ShoppingBagIcon, User2Icon } from "lucide-react";
-import { useEffect, useState } from "react";
-import toast, { Toaster } from "react-hot-toast";
+import {
+    LogIn,
+    LogOut,
+    SearchIcon,
+    ShoppingCart,
+    User2Icon,
+    X,
+} from "lucide-react";
+import { useState } from "react";
+import { motion } from "framer-motion";
+import { RandomLetterSwapPingPong } from "./RandomLetterSwap";
 
-const useDebounce = (word: string) => {
-    const [debouncedWord, setDebouncedWord] = useState("");
-
-    useEffect(() => {
-        const t = setTimeout(() => setDebouncedWord(word), 700);
-        return () => clearTimeout(t);
-    }, [word]);
-
-    return { debouncedWord };
-};
-
-const Navbar: React.FC<{ word: string }> = ({ word }) => {
-    const [product, setProducts] = useState("");
-    const { debouncedWord } = useDebounce(product);
+const Navbar: React.FC<{ word: string }> = () => {
     const { isLoggedIn, onLogout } = useAuth();
+    const [isOpened, setIsOpened] = useState<boolean>(false);
+    const [sideBar, setIsSideBar] = useState<boolean>(false);
     const navigate = useNavigate();
-    const [isOpened, setIsOpened] = useState<boolean>(false)
 
     const navigations = [
-        { id: 1, title: "Home", navigate: "/" },
+        { id: 1, title: "Shop", navigate: "/shop" },
         { id: 2, title: "Categories", navigate: "/categories" },
         { id: 3, title: "About", navigate: "/about" },
-        { id: 4, title: "Contact", navigate: "/contact" }
+        { id: 4, title: "Contact", navigate: "/contact" },
     ];
 
     return (
-        <div className="sticky top-0 z-50 bg-white/70 backdrop-blur-xl border-b border-stone-300 flex items-center justify-center">
-            <Toaster />
-            <div className="w-full mx-auto flex items-center px-6 py-4 gap-10">
+        <>
+            {sideBar && <SideBar setSideBar={setIsSideBar} />}
 
-                {/* Logo */}
-                <div className="flex items-center gap-2 cursor-pointer justify-center flex-1 border-r-2 border-stone-300" onClick={() => navigate("/")}>
-                    <div className="w-9 h-9 rounded-full bg-black flex items-center justify-center">
-                        <img src="./assets/Logo.png" />
-                    </div>
-                    <h2 className="text-lg font-semibold font-[Interif]">Ecommerce</h2>
-                </div>
+            <div className="max-w-[85%] mx-auto px-4 md:px-6 mt-4 flex items-center justify-between">
 
-                {/* Nav */}
-                <div className="hidden md:flex md:items-center md:justify-center gap-10 flex-2 border-r-2 border-stone-300">
-                    {navigations.map(n => (
-                        <p
-                            key={n.id}
-                            onClick={() => navigate(n.navigate)}
-                            className="text-lg text-stone-500 hover:text-orange-600 cursor-pointer transition font-[Interif]"
+                <div className="hidden md:flex items-center gap-6">
+                    {navigations.map((item) => (
+                        <div
+                            key={item.id}
+                            onClick={() => navigate(item.navigate)}
+                            className="text-lg font-[Interif] cursor-pointer"
                         >
-                            {n.title}
-                        </p>
+                            <RandomLetterSwapPingPong label={item.title} />
+                        </div>
                     ))}
                 </div>
 
-                {/* Right */}
-                <div className="flex items-center gap-5 flex-1">
 
-                    {/* Search */}
-                    <div className="relative w-[280px]">
-                        <Search
-                            size={18}
-                            className="absolute left-4 top-1/2 -translate-y-1/2 text-stone-400 cursor-pointer"
-                            onClick={() => {
-                                if (!debouncedWord) return toast.error("Search cannot be empty");
-                                navigate(`/product/search/${debouncedWord}`);
-                            }}
-                        />
-                        <input
-                            value={product.length === 0 ? word : product}
-                            onChange={e => setProducts(e.target.value)}
-                            placeholder="Search products..."
-                            className="w-full pl-11 pr-4 py-2.5 rounded-full border border-stone-300
-                         focus:ring-2 focus:ring-black transition"
-                        />
+                <div className="text-2xl text-center font-[Interif] md:mr-10">
+                    Sabina
+                </div>
+
+
+                <div className="flex items-center gap-4 md:gap-6">
+
+                    <div
+                        onClick={() => setIsSideBar(true)}
+                        className="cursor-pointer flex items-center justify-center"
+                    >
+                        <SearchIcon />
                     </div>
 
-                    {/* Cart */}
-                    <div className="flex items-center">
-                        <button className="cursor-pointer border border-stone-100 p-2" onClick={() => navigate(isLoggedIn ? "/cart" : "/signin")}>
-                            <ShoppingBagIcon />
-                        </button>
-                        <div className="relative border border-stone-100 p-2">
-                            {
-                                isLoggedIn ? "2" : "0"
-                            }
+
+                    <div className="relative flex items-center justify-center">
+                        <ShoppingCart className="cursor-pointer" />
+                        <div
+                            className="absolute -top-2 -right-2  md:left-4 md:bottom-4 bg-black
+              w-5 h-5 md:w-6 md:h-6 rounded-full
+              text-white text-xs md:text-sm
+              flex items-center justify-center font-[Interif]"
+                        >
+                            {isLoggedIn ? 2 : 0}
                         </div>
                     </div>
 
-
+                    {/* User Dropdown */}
                     <div className="relative">
-                        {/* Avatar Button */}
                         <button
                             onClick={() => setIsOpened(!isOpened)}
                             className="w-9 h-9 rounded-full bg-stone-100 hover:bg-stone-200
-                   flex items-center justify-center transition"
+              flex items-center justify-center transition cursor-pointer"
                         >
                             <User2Icon size={18} className="text-stone-700" />
                         </button>
 
-                        {/* Dropdown */}
                         {isOpened && (
                             <div
                                 className="absolute right-0 mt-3 w-44 rounded-xl bg-white
-                       shadow-xl border border-stone-200 overflow-hidden
-                       animate-in fade-in zoom-in-95"
+                shadow-xl border border-stone-200 overflow-hidden
+                z-50 animate-in fade-in zoom-in-95"
                             >
                                 {isLoggedIn ? (
                                     <button
@@ -115,7 +95,7 @@ const Navbar: React.FC<{ word: string }> = ({ word }) => {
                                             setIsOpened(false);
                                         }}
                                         className="w-full flex items-center gap-3 px-4 py-3
-                               text-sm text-stone-700 hover:bg-stone-100 transition"
+                    text-sm text-stone-700 hover:bg-stone-100 transition"
                                     >
                                         <LogOut size={16} />
                                         Logout
@@ -127,20 +107,58 @@ const Navbar: React.FC<{ word: string }> = ({ word }) => {
                                             setIsOpened(false);
                                         }}
                                         className="w-full flex items-center gap-3 px-4 py-3
-                               text-sm text-stone-700 hover:bg-stone-100 transition"
+                    text-sm text-stone-700 hover:bg-stone-100 transition"
                                     >
-                                        <LogIn onClick={() => navigate('/signin')} size={16} />
+                                        <LogIn size={16} />
                                         Sign In
                                     </button>
                                 )}
                             </div>
                         )}
                     </div>
-
-
-
                 </div>
             </div>
+        </>
+    );
+};
+
+const SideBar: React.FC<{
+    setSideBar: React.Dispatch<React.SetStateAction<boolean>>;
+}> = ({ setSideBar }) => {
+    return (
+        <div className="fixed inset-0 bg-black/40 z-50 flex">
+            <motion.div
+                initial={{ x: -380 }}
+                animate={{ x: 0 }}
+                exit={{ x: -380 }}
+                transition={{ duration: 0.7, ease: "easeInOut" }}
+                className="bg-white w-[85%] sm:w-[380px] lg:w-128 h-full"
+            >
+                <div className="w-full flex flex-col items-baseline p-2 mt-5">
+                    <div className="flex items-center gap-2 w-full">
+
+
+                        <div className="flex items-center w-full bg-stone-100 rounded-xl px-4 py-2 focus-within:ring-2 focus-within:ring-black transition">
+                            <SearchIcon className="text-stone-500 mr-3" size={18} />
+                            <input
+                                type="text"
+                                placeholder="Search products..."
+                                style={{ border: "0px" }}
+                                className="w-full bg-transparent border-none outline-none text-sm text-stone-800 placeholder:text-stone-500 focus:outline-none focus:ring-0"
+                            />
+                        </div>
+
+
+                        <X onClick={() => setSideBar(false)} className="cursor-pointer text-stone-600 hover:text-black transition" />
+                    </div>
+                </div>
+            </motion.div>
+
+
+            <div
+                onClick={() => setSideBar(false)}
+                className="flex-1 h-full"
+            />
         </div>
     );
 };
