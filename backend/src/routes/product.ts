@@ -2,11 +2,13 @@ import express from "express";
 const productsRouter = express.Router();
 import { PrismaClient } from "@prisma/client"
 import { PrismaPg } from '@prisma/adapter-pg'
-import { post_product, type Product } from "@kunaljprsingh/ecom-types";
+import { post_product, } from "@kunaljprsingh/ecom-types";
 import multer from "multer"
 import dotenv from "dotenv"
 dotenv.config()
 import { uploadMultipleAssets } from "../function/cloudinary.js";
+import { number } from "zod";
+import { error } from "node:console";
 const connectionString = `${process.env.DATABASE_URL}`
 const adapter = new PrismaPg({ connectionString })
 const storage = multer.memoryStorage()
@@ -14,6 +16,28 @@ const upload = multer({ storage: storage })
 const prisma = new PrismaClient({
     adapter
 })
+
+interface Product_Variant {
+    price: number,
+    quantity: number,
+    color: string,
+    size: string
+}
+interface Product_Variant_Response {
+    id: string,
+    product_id: string,
+    price: number,
+    quantity: number,
+    color: string,
+    size: string
+}
+
+interface Product {
+    product_name: string;
+    product_description: string;
+    variants: Product_Variant[] | any
+
+}
 interface ProductImage {
     id: string;
     image_url: string;
@@ -24,14 +48,13 @@ interface Product_Type {
     id: string;
     product_name: string;
     product_description: string;
-    price: number;
-    quantity: number;
     images: ProductImage[];
 }
 
 productsRouter.post('/', upload.array('images'), async (req: express.Request, res: express.Response) => {
     try {
-        const { product_description, product_name, price, qunatity }: Product = req.body;
+        const { product_description, product_name, variants }: Product = req.body;
+        console.log(req.body)
         const images = req.files as Express.Multer.File[]
 
         let buffer: Buffer[] = [];
@@ -60,8 +83,6 @@ productsRouter.post('/', upload.array('images'), async (req: express.Request, re
                 data: {
                     product_name: product_name,
                     product_description: product_description,
-                    price: Number(price),
-                    quantity: Number(qunatity),
                 }
             });
 
@@ -71,6 +92,33 @@ productsRouter.post('/', upload.array('images'), async (req: express.Request, re
                     image_url: item.url,
                 }))
             });
+
+            let jsonArray = variants.map((str: any) => {
+                // Standardize the string so it's valid JSON:
+                // This regex wraps keys and non-numeric values in double quotes
+                let formattedStr = str
+                    .replace(/([a-zA-Z0-9]+)\s*:/g, '"$1":')  // Wrap keys in quotes
+                    .replace(/:\s*([a-zA-Z]+)/g, ': "$1"');   // Wrap string values in quotes
+
+                return JSON.parse(formattedStr);
+            });
+
+            console.log(jsonArray)
+
+            const records = await Promise.all(jsonArray.map(async (item: Product_Variant) => {
+                const new_variant = await tx.product_variants.create({
+                    data: {
+                        price: Number(item.price),
+                        quantity: Number(item.quantity),
+                        product_id: product.id
+                    }
+                })
+                return new_variant;
+            }))
+
+            if (!records || records.length == 0) {
+                throw new Error("Unable to add products")
+            }
 
 
             return product;
@@ -167,11 +215,25 @@ productsRouter.get('/:productId', async (req: express.Request, res: express.Resp
                 product_id: product.id
             }
         })
+        const product_vairants = await prisma.product_variants.findMany({
+            where: {
+                product_id: product.id
+            }
+        })
+        const sizes = product_vairants.map(item => {
+            return item.size
+        })
+        const colors = product_vairants.map(item => {
+            return item.color
+        })
         res.status(200).json({
             valid: true,
             product: {
                 ...product,
-                images: productImages
+                images: productImages,
+                sizes: sizes,
+                colors: sizes,
+                variants: product_vairants
             }
         })
     } catch (error) {
