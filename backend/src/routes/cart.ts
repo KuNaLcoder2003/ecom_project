@@ -2,12 +2,19 @@ import express from 'express'
 const cartRouter = express.Router()
 import { PrismaPg } from '@prisma/adapter-pg'
 import { PrismaClient } from '@prisma/client';
-import { type Cart, cart } from '@kunaljprsingh/ecom-types';
+import { cart } from '@kunaljprsingh/ecom-types';
 import authMiddleware from '../middlewares/authMiddleware.js';
 import { cart_product_availability } from '../function/checkAvailabilty.js';
 const connectionString = `${process.env.DATABASE_URL}`
 const adapter = new PrismaPg({ connectionString })
 const prisma = new PrismaClient({ adapter });
+
+interface Cart {
+    product_variant_id: string;
+    product_id: string
+    quantity: number;
+    price: number;
+}
 interface ProductImage {
     id: string;
     image_url: string;
@@ -16,12 +23,14 @@ interface ProductImage {
 interface Cart_Type {
     cart_id: string;
     product_id: string;
+    product_variant_id: string;
     qunatity: number;
     price: number;
     images: ProductImage[]
+
 }
 interface Cart_Product {
-    product_id: string,
+    product_variant_id: string,
     requested_qunatity: number
 }
 
@@ -45,9 +54,9 @@ cartRouter.post('/', authMiddleware, async (req: any, res: express.Response) => 
                 valid: false
             })
         }
-        const product = await prisma.products.findFirst({
+        const product = await prisma.product_variants.findFirst({
             where: {
-                id: product_details.product_id
+                id: product_details.product_variant_id
             }
         })
         if (!product) {
@@ -102,7 +111,7 @@ cartRouter.post('/', authMiddleware, async (req: any, res: express.Response) => 
                     }
                 }
             })
-            if (existing && existing.qunatity + product_details.quantity > product.quantity) {
+            if (existing && existing.qunatity + product_details.quantity > product?.quantity) {
                 // console.log("Hereee i am ")
                 throw new Error("INSUFFICIENT_STOCK")
             }
@@ -121,6 +130,7 @@ cartRouter.post('/', authMiddleware, async (req: any, res: express.Response) => 
                 create: {
                     cart_id: cartId,
                     product_id: product_details.product_id,
+                    product_variant_id: product_details.product_variant_id,
                     qunatity: product_details.quantity,
                     price: product_details.price
                 }
@@ -328,7 +338,7 @@ cartRouter.post('/checkout', authMiddleware, async (req: express.Request, res: e
         const cart: Cart_Type[] = req.body.cart;
         const products: Cart_Product[] = cart.map(product => {
             return {
-                product_id: product.product_id,
+                product_variant_id: product.product_variant_id,
                 requested_qunatity: product.qunatity
             }
         })
