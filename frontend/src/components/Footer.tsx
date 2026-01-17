@@ -1,83 +1,73 @@
 import type React from "react";
-import NewsLetter from "./NewsLetter";
-import { Instagram, Twitter, Youtube } from "lucide-react";
+
+import { Facebook, Instagram, Twitter } from "lucide-react";
 
 const Footer: React.FC = () => {
     return (
-        <div className="mt-30">
-            <NewsLetter />
-            <Cloumn />
-            <p className="text-stone-400 font-[InterSerif] m-auto text-center mb-10">© 2025 Kunal. All rights reserved.</p>
-        </div>
-    )
-}
+        <footer className="bg-black text-white pt-16">
+            <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-4 gap-12">
 
-const Cloumn: React.FC = () => {
-    return (
-        <div className="w-screen h-[429px] m-auto p-4">
-            <div className="max-w-7xl m-auto flex items-center justify-around gap-2 mt-20">
-
-                {/* Col - 1 */}
-                <div className="flex flex-col items-baseline gap-6">
-                    <div className="flex items-center gap-2">
-                        <div className="w-[40px] h-[40px] rouded-full bg-black flex items-center justify-center">
-                            <img src="./assets/Logo.png" />
-                        </div>
-                        <h2 className="text-lg font-semibold font-[InterSerif]">Ecommerce</h2>
-                    </div>
-                    <p className="w-[300px] text-md text-stone-400 font-[InterSerif]">
-                        DevCut is a YouTube channel for practical project-based learning.
+                {/* Brand */}
+                <div>
+                    <h2 className="text-2xl font-semibold tracking-wide">SABINA</h2>
+                    <p className="text-sm text-gray-400 mt-4 max-w-xs">
+                        Discover timeless pieces for effortless style.
                     </p>
-                    <div className="flex items-center gap-2">
-                        <Youtube className="text-stone-700 cursor-pointer" />
-                        <Twitter className="text-stone-700 cursor-pointer" />
-                        <Instagram className="text-stone-700 cursor-pointer" />
+
+                    <div className="flex gap-4 mt-6">
+                        <a href="#" className="text-gray-400 hover:text-white transition">
+                            <Facebook size={18} />
+                        </a>
+                        <a href="#" className="text-gray-400 hover:text-white transition">
+                            <Instagram size={18} />
+                        </a>
+                        <a href="#" className="text-gray-400 hover:text-white transition">
+                            <Twitter size={18} />
+                        </a>
                     </div>
                 </div>
 
-                {/* Col - 2 */}
-                <div className="space-y-6">
-                    <h3 className="text-md font-[InterSerif] text-center">Support</h3>
-                    <div className="flex flex-col gap-4 items-center text-md font-[InterSerif] text-stone-400">
-                        <p>FAQ</p>
-                        <p>Terms of use</p>
-                        <p>Privacy Policy</p>
-                    </div>
+                {/* Information */}
+                <div>
+                    <h3 className="text-sm font-medium mb-5">Information</h3>
+                    <ul className="space-y-3 text-sm text-gray-400">
+                        <li className="hover:text-white cursor-pointer">Shipping Policy</li>
+                        <li className="hover:text-white cursor-pointer">Returns & Refunds</li>
+                        <li className="hover:text-white cursor-pointer">Privacy Policy</li>
+                    </ul>
                 </div>
 
-                {/* Col - 3 */}
-                <div className="space-y-6">
-                    <h3 className="text-md font-[InterSerif] text-center">Company</h3>
-                    <div className="flex flex-col gap-4 items-center text-md font-[InterSerif] text-stone-400">
-                        <p>About Us</p>
-                        <p>Contact</p>
-                        <p>Careers</p>
-                    </div>
+                {/* Company */}
+                <div>
+                    <h3 className="text-sm font-medium mb-5">Company</h3>
+                    <ul className="space-y-3 text-sm text-gray-400">
+                        <li className="hover:text-white cursor-pointer">About us</li>
+                        <li className="hover:text-white cursor-pointer">Contact</li>
+                        <li className="hover:text-white cursor-pointer">Blogs</li>
+                    </ul>
                 </div>
 
-                {/* Col - 4 */}
-                <div className="space-y-6">
-                    <h3 className="text-md font-[InterSerif] text-center">Shop</h3>
-                    <div className="flex flex-col gap-4 items-center text-md font-[InterSerif] text-stone-400">
-                        <p>My Account</p>
-                        <p>Checkout</p>
-                        <p>Cart</p>
-                    </div>
+                {/* Contact */}
+                <div>
+                    <h3 className="text-sm font-medium mb-5">Contact</h3>
+                    <ul className="space-y-3 text-sm text-gray-400">
+                        <li>2810 N Church St PMB 48572,<br /> Wilmington, Delaware</li>
+                        <li>+1 123 456 7890</li>
+                        <li>info@example.com</li>
+                    </ul>
                 </div>
-
-                {/* Col - 5 */}
-                <div className="space-y-6">
-                    <h3 className="text-md font-[InterSerif] text-center">Accepted Paymets</h3>
-                    <div className="flex gap-4 items-center text-md font-[InterSerif] text-stone-400">
-                        <img src="./assets/master.png" />
-                        <img src="./assets/amex.png" />
-                        <img src="./assets/visa.png" />
-                    </div>
-                </div>
-
             </div>
-        </div>
+
+            {/* Bottom bar */}
+            <div className="border-t border-white/10 mt-14 py-6">
+                <p className="text-center text-sm text-gray-500">
+                    © 2024, Sabina.
+                </p>
+            </div>
+        </footer>
     )
 }
+
+
 
 export default Footer;
