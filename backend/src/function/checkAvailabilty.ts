@@ -6,7 +6,7 @@ type DBClient = Prisma.TransactionClient | PrismaClient
 export const checkAvailability = async (db: DBClient, product_id: string, requested_qunatity: number) => {
     let err: string = "";
     try {
-        const product = await db.products.findUnique({
+        const product = await db.product_variants.findUnique({
             where: {
                 id: product_id
             }
@@ -27,7 +27,7 @@ export const checkAvailability = async (db: DBClient, product_id: string, reques
 }
 
 interface Cart_Product {
-    product_id: string,
+    product_variant_id: string,
     requested_qunatity: number
 }
 interface Response {
@@ -45,13 +45,13 @@ export const cart_product_availability = async (
             cart_product.map(async (product) => {
                 const err = await checkAvailability(
                     db,
-                    product.product_id,
+                    product.product_variant_id,
                     product.requested_qunatity
                 );
 
                 if (err.length > 0) {
                     return {
-                        product_id: product.product_id,
+                        product_id: product.product_variant_id,
                         err
                     };
                 }
