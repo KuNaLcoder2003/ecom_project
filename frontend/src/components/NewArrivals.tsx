@@ -47,7 +47,7 @@ const NewArrivals: React.FC = () => {
     console.log(arr2)
     return (
         <div className="w-[90%] lg:max-w-[83%] m-auto mt-8 mb-2 space-y-4">
-            <SectionHeading />
+            <SectionHeading subHeading="Shop the Latest Styles: Stay ahead of the curve with our newest arrivals" heading="New Arrivals" />
             <div className="flex flex-col gap-8 lg:flex-row lg:items-center">
                 {
                     arr1.map(item => {
@@ -70,13 +70,13 @@ const NewArrivals: React.FC = () => {
     )
 }
 
-const SectionHeading = () => {
+export const SectionHeading: React.FC<{ heading: string, subHeading: string }> = ({ heading, subHeading }) => {
     const [borderLength, setBorderLenght] = useState<number>(50)
     return (
         <div className="w-full p-2 flex flex-col items-baseline gap-2">
-            <h1 className="text-4xl font-semibold font-[Interif]">New Arrivals</h1>
+            <h1 className="text-4xl font-semibold font-[Interif]">{heading}</h1>
             <div className="w-full flex items-center justify-between text-xl font-[Interif]">
-                <p className="w-[60%] lg:w-auto">Shop the Latest Styles: Stay ahead of the curve with our newest arrivals</p>
+                <p className="w-[60%] lg:w-auto">{subHeading}</p>
                 <div className="flex flex-col items-end">
                     <p className="cursor-pointer" onMouseEnter={() => setBorderLenght(100)} onMouseLeave={() => setBorderLenght(50)}>All Products</p>
                     <div style={{
@@ -93,7 +93,7 @@ const SectionHeading = () => {
     )
 }
 
-const ProductCard: React.FC<{ url: string, product_name: string, product_price: number }> = ({ url, product_name, product_price }) => {
+export const ProductCard: React.FC<{ url: string, product_name: string, product_price: number }> = ({ url, product_name, product_price }) => {
     const [hovered, setHovered] = useState<boolean>(false)
     return (
         <div onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)} className="w-[100%] lg:w-[32%] flex flex-col items-baseline gap-2">
