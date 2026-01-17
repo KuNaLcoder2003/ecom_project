@@ -3,7 +3,6 @@ import cors from "cors";
 import router from "./routes/index.js";
 import { PrismaPg } from '@prisma/adapter-pg'
 import dotenv from "dotenv"
-import bodyParser from "body-parser";
 import Stripe from "stripe";
 import { PrismaClient } from "@prisma/client";
 import sendMail from "./function/mail.js";
@@ -25,7 +24,7 @@ app.post('/webhook/verify', express.raw({ type: 'application/json' }), async (re
             STRIPE_WEBHOOK_SECRET_KEY
         )
     } catch (err) {
-        console.log(`⚠️ Webhook signature verification failed.`, err);
+        console.log(`Webhook signature verification failed.`, err);
         return res.sendStatus(400);
     }
 
@@ -65,12 +64,11 @@ app.post('/webhook/verify', express.raw({ type: 'application/json' }), async (re
                     where: {
                         cart_id: order?.cart_id
                     },
-
                 })
                 total = cart_products.reduce((sum, curr) => sum + curr.price * curr.qunatity, 0)
 
                 const updated = await Promise.all(cart_products.map(async (item) => {
-                    const product = await tx.products.findUnique({
+                    const product = await tx.product_variants.findUnique({
                         where: { id: item.product_id },
                         select: { quantity: true },
                     });
@@ -82,7 +80,7 @@ app.post('/webhook/verify', express.raw({ type: 'application/json' }), async (re
                         throw new Error('Insufficient stock');
                     }
 
-                    const result = await tx.products.updateMany({
+                    const result = await tx.product_variants.updateMany({
                         where: {
                             id: item.product_id,
                             quantity: { gte: item.qunatity }
