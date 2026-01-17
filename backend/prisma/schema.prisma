@@ -44,11 +44,22 @@ model products {
   id String @id @default(uuid()) @unique
   product_name String
   product_description String
-  price Int
-  quantity Int
   images product_images[]
   cart_products cart_products[]
   ordered_products ordered_products[]
+  product_sizes product_variants[]
+}
+
+model product_variants {
+  id String @id @default(uuid()) @unique
+  product_id String
+  price Int
+  quantity Int
+  color String @default("")
+  size String @default("")
+  product products @relation(fields: [product_id] , references: [id])
+  cart cart_products?
+  @@unique([product_id , size,color])
 }
 
 model product_images {
@@ -69,10 +80,12 @@ model cart {
 model cart_products {
   cart_id String
   product_id String
+  product_variant_id String @unique
   qunatity Int
   price Int
   products products @relation(fields: [product_id] , references: [id])
   cart cart @relation(fields: [cart_id], references: [id])
+  product product_variants @relation(fields: [product_variant_id] , references: [id])
   @@id([cart_id , product_id])
 }
 
@@ -81,7 +94,7 @@ model order{
   user_id String
   cart_id String
   address_id String
-  status Boolean
+  status String
   user users @relation(fields: [user_id] , references: [id])
   cart cart @relation(fields: [cart_id] , references: [id])
   address address @relation(fields: [address_id] , references: [id])
@@ -122,6 +135,7 @@ model payments {
   order order @relation(fields: [order_id] , references: [id])
   user users @relation(fields: [user_id] , references: [id])
 }
+
 
 
 
