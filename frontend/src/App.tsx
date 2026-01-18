@@ -7,7 +7,6 @@ import SignInForm from './components/SignIn'
 import Home from './pages/Home'
 
 import Product from './components/Product'
-import Cart from './components/Cart'
 import CheckOut from './pages/CheckOut'
 import PaymentPage from './pages/PaymentPage'
 import AdminDashBoard from './pages/AdminDashBoard'
@@ -24,7 +23,6 @@ function App() {
         <Route path='/' element={<Home />} />
         <Route path='/signup' element={<SignupForm />} />
         <Route path='/signin' element={<SignInForm />} />
-        <Route path='/cart' element={<Cart />} />
         <Route path='/product/:id' element={<Product />} />
         <Route path='/order' element={<CheckOut />} />
         <Route path='/payment/:orderId' element={<PaymentPage />} />
