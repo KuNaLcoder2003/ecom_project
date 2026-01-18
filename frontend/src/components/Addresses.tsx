@@ -18,7 +18,7 @@ const AddressStep = ({
 }: {
     addresses: Address[];
     selectedAddress: Address | null;
-    onSelect: (address: Address) => void;
+    onSelect: any;
 }) => {
     const { cart } = useCart();
     const handleAddress = async () => {
@@ -61,47 +61,44 @@ const AddressStep = ({
     return (
         <>
             <Toaster />
-            <h2 className="text-2xl font-semibold mb-6">
-                📍 Select Address
-            </h2>
+            <div className="bg-white rounded-2xl p-6 shadow-sm space-y-6">
 
-            <div className="grid md:grid-cols-2 gap-4">
-                {addresses.map((address) => {
-                    const isSelected = selectedAddress?.id === address.id;
+                <h2 className="text-2xl font-semibold font-[Interif]">
+                    Select Delivery Address
+                </h2>
 
-                    return (
-                        <div
-                            key={address.id}
-                            onClick={() => onSelect(address)}
-                            className={`cursor-pointer border rounded-lg p-4 transition
-                ${isSelected
-                                    ? "border-green-500 bg-green-50"
-                                    : "hover:border-gray-400"
-                                }`}
-                        >
-                            <p className="font-medium">
-                                {address.house_no}, {address.street}
-                            </p>
-
-                            <p className="text-sm text-gray-600 mt-1">
-                                {address.land_mark}, {address.city}
-                            </p>
-
-                            <p className="text-sm text-gray-600">
-                                {address.state} - {address.pin_code}
-                            </p>
-                        </div>
-                    );
-                })}
-            </div>
-
-            {selectedAddress && (
-                <div className="mt-6 text-right">
-                    <button onClick={() => handleAddress()} className="px-6 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition">
-                        Confirm Address
-                    </button>
+                <div className="space-y-4">
+                    {addresses.map((addr: any) => {
+                        const active = selectedAddress?.id === addr.id
+                        return (
+                            <div
+                                key={addr.id}
+                                onClick={() => onSelect(addr)}
+                                className={`p-4 rounded-xl cursor-pointer border transition
+                            ${active ? "border-black bg-zinc-50" : "border-stone-100 hover:border-zinc-300"}`}
+                            >
+                                <p className="font-medium">
+                                    {addr.house_no}, {addr.street}
+                                </p>
+                                <p className="text-sm text-zinc-500">
+                                    {addr.city}, {addr.state} - {addr.pin_code}
+                                </p>
+                            </div>
+                        )
+                    })}
                 </div>
-            )}
+
+                <button
+                    onClick={async () => await handleAddress()}
+                    disabled={!selectedAddress}
+                    className={`w-full py-3 rounded-xl transition
+                ${selectedAddress
+                            ? "bg-black text-white"
+                            : "bg-zinc-200 text-zinc-400 cursor-not-allowed"}`}
+                >
+                    Place Order
+                </button>
+            </div>
         </>
     );
 };
