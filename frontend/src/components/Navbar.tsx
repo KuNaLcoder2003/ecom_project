@@ -12,12 +12,16 @@ import {
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { RandomLetterSwapPingPong } from "./RandomLetterSwap";
+import useCart from "../hooks/useCart";
+import Cart from "./Cart";
 
 const Navbar: React.FC<{ word: string }> = () => {
     const { isLoggedIn, onLogout } = useAuth();
     const [isOpened, setIsOpened] = useState<boolean>(false);
     const [sideBar, setIsSideBar] = useState<boolean>(false);
     const navigate = useNavigate();
+    const { cartCount } = useCart()
+    const [cartOpen, setCartOpen] = useState<boolean>(false)
 
     const navigations = [
         { id: 1, title: "Shop", navigate: "/shop" },
@@ -29,6 +33,7 @@ const Navbar: React.FC<{ word: string }> = () => {
     return (
         <>
             {sideBar && <SideBar setSideBar={setIsSideBar} />}
+            {(cartOpen) && < Cart setCart={setCartOpen} />}
 
             <div className="max-w-[85%] mx-auto px-4 md:px-6 mt-4 flex items-center justify-between">
 
@@ -61,14 +66,14 @@ const Navbar: React.FC<{ word: string }> = () => {
 
 
                     <div className="relative flex items-center justify-center">
-                        <ShoppingCart className="cursor-pointer" />
+                        <ShoppingCart onClick={() => setCartOpen(true)} className="cursor-pointer" />
                         <div
                             className="absolute -top-2 -right-2  md:left-4 md:bottom-4 bg-black
               w-5 h-5 md:w-6 md:h-6 rounded-full
               text-white text-xs md:text-sm
               flex items-center justify-center font-[Interif]"
                         >
-                            {isLoggedIn ? 2 : 0}
+                            {isLoggedIn ? cartCount : 0}
                         </div>
                     </div>
 
@@ -162,5 +167,7 @@ const SideBar: React.FC<{
         </div>
     );
 };
+
+
 
 export default Navbar;
