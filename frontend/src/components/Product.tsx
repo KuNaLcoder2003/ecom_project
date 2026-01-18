@@ -4,7 +4,6 @@ import Navbar from "../components/Navbar";
 import useProduct from "../hooks/useProduct";
 import { Toaster, toast } from "react-hot-toast";
 import { motion } from "framer-motion"
-// import addToCart from "../functions/addToCart";
 import { Minus, Plus } from "lucide-react";
 import { ProductCard, SectionHeading } from "./NewArrivals";
 import Footer from "./Footer";
