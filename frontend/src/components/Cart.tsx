@@ -1,38 +1,25 @@
 import type React from "react";
-import Navbar from "../components/Navbar";
-import useCart from "../hooks/useCart";
-import { Loader2 } from "lucide-react";
+import { motion } from "framer-motion"
+import useCart, { type Cart as CartType } from "../hooks/useCart";
+import { Loader, LucideDelete, X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
-const Cart: React.FC = () => {
-    const { cart, loading, error, route, handleCheckout } = useCart();
+const Cart: React.FC<{ setCart: React.Dispatch<React.SetStateAction<boolean>> }> = ({ setCart }) => {
+    const { cart, loading, error, route, handleCheckout, cartTotal } = useCart();
     const navigate = useNavigate();
-
-    const totalAmount = cart?.reduce(
-        (sum, item) => sum + item.price * item.qunatity,
-        0
-    );
-
-    if (loading) {
-        return (
-            <>
-                <Navbar />
-                <div className="flex justify-center items-center h-[60vh]">
-                    <Loader2 className="animate-spin" size={40} />
-                </div>
-            </>
-        );
-    }
 
     if (error) {
         return (
-            <>
-                <Navbar />
-                <div className="text-center mt-20 text-red-500">
+            <div className="absolute inset-0 bg-black/20 flex items-center h-auto z-[9999] overflow-hidden">
+                <div onClick={() => setCart(false)} className="flex-1 w-full h-full">
+                </div>
+
+                <div className="w-128 bg-white p-2 h-full flex items-center justify-center">
                     {error}
                 </div>
-            </>
-        );
+
+            </div>
+        )
     }
 
     const handleCheckoutButton = async () => {
@@ -51,92 +38,114 @@ const Cart: React.FC = () => {
 
     return (
         <>
-            <Navbar />
-
-            {
-                loading ? <div>Loading...</div> : <div className="max-w-7xl mx-auto px-6 py-10 grid grid-cols-1 lg:grid-cols-3 gap-10">
-
-                    {/* CART ITEMS */}
-                    <div className="lg:col-span-2 flex flex-col gap-6">
-                        <h1 className="text-2xl font-semibold">Your Cart</h1>
-
-                        {cart?.length === 0 && (
-                            <p className="text-gray-500">Your cart is empty.</p>
-                        )}
-
-                        {cart?.map((item) => (
-                            <div
-                                key={item.cart_id}
-                                className="flex items-center gap-6 border rounded-xl p-4"
-                            >
-                                {/* Image */}
-                                <div className="w-[100px] h-[100px] rounded-lg overflow-hidden border">
-                                    <img
-                                        src={item.images[0]?.image_url}
-                                        alt="product"
-                                        className="w-full h-full object-cover"
-                                    />
-                                </div>
-
-                                {/* Info */}
-                                <div className="flex-1">
-                                    <p className="font-medium">
-                                        Product ID: {item.product_id}
-                                    </p>
-                                    <p className="text-sm text-gray-500">
-                                        Quantity: {item.qunatity}
-                                    </p>
-                                    {
-                                        item.err ? <p className="text-sm text-red-500">
-                                            {item.err}
-                                        </p> : null
-                                    }
-                                </div>
-
-                                {/* Price */}
-                                <div className="flex flex-col items-end gap-2">
-                                    <p className="font-semibold">
-                                        ₹ {item.price * item.qunatity}
-                                    </p>
-                                    <button className="text-sm text-red-500 hover:underline">
-                                        Remove
-                                    </button>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-
-                    {/* ORDER SUMMARY */}
-                    <div className="border rounded-xl p-6 h-fit">
-                        <h2 className="text-xl font-semibold mb-4">
-                            Order Summary
-                        </h2>
-
-                        <div className="flex justify-between mb-2">
-                            <p>Subtotal</p>
-                            <p>₹ {totalAmount}</p>
-                        </div>
-
-                        <div className="flex justify-between mb-2">
-                            <p>Shipping</p>
-                            <p className="text-green-600">Free</p>
-                        </div>
-
-                        <hr className="my-4" />
-
-                        <div className="flex justify-between text-lg font-semibold mb-6">
-                            <p>Total</p>
-                            <p>₹ {totalAmount}</p>
-                        </div>
-
-                        <button onClick={() => handleCheckoutButton()} className="w-full py-3 bg-black text-white rounded-lg hover:opacity-90 transition cursor-pointer">
-                            Proceed to Checkout
-                        </button>
-                    </div>
+            <div className="absolute inset-0 bg-black/20 flex items-center h-auto z-[9999] overflow-hidden">
+                <div onClick={() => setCart(false)} className="flex-1 w-full h-full">
                 </div>
-            }
+                <motion.div
+                    className="w-128 bg-white p-2 h-full"
+                    initial={{ x: 320 }}
+                    whileInView={{ x: 0 }}
+                    exit={{ x: -100 }}
+                    transition={{ delay: 0, duration: 0.7, ease: "easeIn" }}
+                >
+                    {
+                        loading ? <div className="flex items-center justify-center h-full w-full">
+                            <Loader />
+                        </div> : cart && <motion.div
+
+                            className="w-full h-full flex flex-col items-baseline justify-between">
+                            <div className="flex items-center w-full justify-between">
+                                <div className="flex items-center gap-2 flex-1">
+                                    <h3 className="text-2xl font-[Interif] font-thin">Your Cart</h3>
+                                    <p className="w-6 h-6 bg-black flex items-center justify-center text-white rounded-full">{cart.length}</p>
+                                </div>
+
+                                <X onClick={() => setCart(false)} className="cursor-pointer" fill="black" size={16} />
+                            </div>
+
+                            <div className="flex flex-col items-baseline gap-4 w-full h-auto overflow-scroll flex-2 mt-5">
+                                {
+                                    cart.map((item) => {
+                                        return (
+                                            <ProductEntry props={item} />
+                                        )
+                                    })
+                                }
+                            </div>
+
+                            <div className="space-y-4 w-full p-2">
+                                <div className="w-full border border-stone-100" />
+                                <div className="font-[Interif] font-light flex items-center justify-between w-ful text-xl">
+                                    <p className="font-lg">Cart Total</p>
+                                    <p className="font-lg">$ {cartTotal}</p>
+                                </div>
+                                <button onClick={async () => await handleCheckoutButton()} className="w-full py-3 text-center bg-black text-white rounded-lg cursor-pointer">Checkout</button>
+                            </div>
+
+
+                        </motion.div>
+                    }
+                </motion.div>
+            </div>
+
         </>
     );
 };
+
+
+
+const ProductEntry: React.FC<{ props: CartType }> = ({ props }) => {
+    return (
+        <div className="w-full p-4 bg-white rounded-2xl shadow-sm hover:shadow-md transition-shadow duration-300">
+            <div className="flex gap-4">
+
+
+                <div className="w-24 h-28 rounded-xl overflow-hidden bg-zinc-100 shrink-0">
+                    <img
+                        src={props.images[0].image_url}
+                        className="object-cover w-full h-full"
+                    />
+                </div>
+
+
+                <div className="flex flex-col gap-3 w-full">
+
+
+                    <div className="flex items-start justify-between">
+                        <h3 className="text-lg sm:text-xl font-semibold font-[Interif] leading-tight">
+                            {props.product_name}
+                        </h3>
+
+                        <button className="text-red-400 hover:text-red-600 transition-colors">
+                            <LucideDelete size={18} className="cursor-pointer" />
+                        </button>
+                    </div>
+
+
+                    <div className="flex flex-col items-baseline text-sm sm:text-base w-full">
+                        <div className="flex justify-between col-span-2 sm:col-span-1 w-full">
+                            <span className="text-zinc-500">Price</span>
+                            <span className="font-medium">$ {props.price}</span>
+                        </div>
+
+                        <div className="flex justify-between col-span-2 sm:col-span-1 w-full">
+                            <span className="text-zinc-500">Quantity</span>
+                            <span className="font-medium">{props.qunatity}</span>
+                        </div>
+                    </div>
+
+
+                    <div className="flex items-center justify-between pt-2 border-t border-zinc-100">
+                        <span className="text-zinc-500 text-sm">Total</span>
+                        <span className="text-lg font-semibold">
+                            $ {props.price * props.qunatity}
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    )
+}
 
 export default Cart;
