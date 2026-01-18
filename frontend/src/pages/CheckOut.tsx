@@ -36,15 +36,16 @@ type Address = {
 type Props = {
     products: Product[];
     addresses: Address[];
-
 };
 
 const CheckoutPage = ({ products, addresses }: Props) => {
-    const [step, setStep] = useState<1 | 2>(1);
-    const [selectedAddress, setSelectedAddress] = useState<Address | null>(null);
+    const [step, setStep] = useState<1 | 2>(1)
+    const [selectedAddress, setSelectedAddress] = useState(null)
 
     return (
-        <div className="max-w-4xl mx-auto p-4">
+        <CheckoutLayout>
+            <CheckoutSteps step={step} />
+
             {step === 1 && (
                 <ProductStep
                     products={products}
@@ -59,9 +60,10 @@ const CheckoutPage = ({ products, addresses }: Props) => {
                     onSelect={setSelectedAddress}
                 />
             )}
-        </div>
-    );
-};
+        </CheckoutLayout>
+    )
+}
+
 
 
 
@@ -71,12 +73,46 @@ const CheckOut: React.FC = () => {
     return (
         // <CheckoutPage />
         <>
-            <Navbar />
+            <Navbar word="" />
             {
                 loading ? <LoaderCircle /> : <CheckoutPage addresses={address} products={products} />
             }
         </>
     )
 }
+
+const CheckoutLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+    return (
+        <div className="mt-20 max-w-4xl mx-auto px-4 sm:px-6">
+            <div className="space-y-8">
+                {children}
+            </div>
+        </div>
+    )
+}
+
+const CheckoutSteps = ({ step }: { step: number }) => {
+    return (
+        <div className="flex items-center justify-between mb-6">
+            {["Products", "Address", "Payment"].map((label, index) => {
+                const active = step === index + 1
+                return (
+                    <div key={label} className="flex items-center gap-3">
+                        <div
+                            className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium
+                            ${active ? "bg-black text-white" : "bg-zinc-200 text-zinc-500"}`}
+                        >
+                            {index + 1}
+                        </div>
+                        <span className={`${active ? "text-black" : "text-zinc-400"} text-sm`}>
+                            {label}
+                        </span>
+                    </div>
+                )
+            })}
+        </div>
+    )
+}
+
 
 export default CheckOut;
