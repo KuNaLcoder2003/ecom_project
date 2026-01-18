@@ -187,6 +187,14 @@ cartRouter.get('/products', authMiddleware, async (req: any, res: express.Respon
             return item.product_id
         })
 
+        const products_arr = await prisma.products.findMany({
+            where: {
+                id: {
+                    in: product_ids
+                }
+            }
+        })
+
         const products = await prisma.product_images.findMany({
             where: {
                 product_id: {
@@ -207,8 +215,17 @@ cartRouter.get('/products', authMiddleware, async (req: any, res: express.Respon
             })
             return temp;
         })
+        const finalArr = cart_product_list.map(item => {
+            let temp: any = { ...item }
+            products_arr.map(obj => {
+                if (obj.id == item.product_id) {
+                    temp["product_name"] = obj.product_name
+                }
+            })
+            return temp
+        })
         res.status(200).json({
-            cart: cart_product_list,
+            cart: finalArr,
             valid: true
         })
     } catch (error) {
