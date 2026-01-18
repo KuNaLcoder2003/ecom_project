@@ -7,8 +7,6 @@ import multer from "multer"
 import dotenv from "dotenv"
 dotenv.config()
 import { uploadMultipleAssets } from "../function/cloudinary.js";
-import { number } from "zod";
-import { error } from "node:console";
 const connectionString = `${process.env.DATABASE_URL}`
 const adapter = new PrismaPg({ connectionString })
 const storage = multer.memoryStorage()
@@ -110,6 +108,8 @@ productsRouter.post('/', upload.array('images'), async (req: express.Request, re
                     data: {
                         price: Number(item.price),
                         quantity: Number(item.quantity),
+                        color: item.color,
+                        size: item.size,
                         product_id: product.id
                     }
                 })
@@ -223,16 +223,15 @@ productsRouter.get('/:productId', async (req: express.Request, res: express.Resp
         const sizes = product_vairants.map(item => {
             return item.size
         })
-        const colors = product_vairants.map(item => {
-            return item.color
-        })
+        const colors = [...new Set(product_vairants.map(({ color }) => color))];
+
         res.status(200).json({
             valid: true,
             product: {
                 ...product,
                 images: productImages,
                 sizes: sizes,
-                colors: sizes,
+                colors: colors,
                 variants: product_vairants
             }
         })
