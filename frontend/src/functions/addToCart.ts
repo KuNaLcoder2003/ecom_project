@@ -1,7 +1,7 @@
 
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
-const addToCart = async (product_id: string, qunatity: number, price: number) => {
+const addToCart = async (product_id: string, qunatity: number, price: number, product_variant_id: string) => {
     let error: string = "";
     let message: string = "";
     try {
@@ -15,7 +15,8 @@ const addToCart = async (product_id: string, qunatity: number, price: number) =>
             body: JSON.stringify({
                 product_id: product_id,
                 quantity: qunatity,
-                price: price
+                price: price,
+                product_variant_id: product_variant_id
             })
         })
         const data = await response.json();
