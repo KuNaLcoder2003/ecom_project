@@ -8,11 +8,13 @@ interface ProductImage {
     image_url: string;
     product_id: string;
 }
-interface Cart {
+export interface Cart {
     cart_id: string;
     product_id: string;
     qunatity: number;
     price: number;
+    product_variant_id: string,
+    product_name: string
     images: ProductImage[],
     err?: string
 }
@@ -21,8 +23,10 @@ interface Response_Unavailable {
     err: string
 }
 const useCart = () => {
-    const [cart, setCart] = useState<Cart[]>();
+    const [cart, setCart] = useState<Cart[]>([]);
+    const [cartCount, setCartCount] = useState<number>(cart?.length)
     const [loading, setLoading] = useState<boolean>(false);
+    const [cartTotal, setCartTotal] = useState<number>(0)
     const [loading_unavailable, setLoadingUnavailable] = useState<boolean>(false);
     const [route, setRoute] = useState<boolean>(false);
     const [error, setError] = useState<string>("");
@@ -45,7 +49,10 @@ const useCart = () => {
                     setError(data.message)
                 } else {
                     setLoading(false)
-                    setCart(data.cart)
+                    const cart = data.cart as Cart[]
+                    setCart(cart)
+                    setCartCount(data.cart.length)
+                    setCartTotal(cart.reduce((sum, b) => sum + b.price * b.qunatity, 0))
                 }
             })
         } catch (error) {
@@ -85,7 +92,7 @@ const useCart = () => {
             setRoute(false);
         }
     }
-    return { cart, loading, error, unavailble, route, handleCheckout, loading_unavailable }
+    return { cart, loading, error, unavailble, route, handleCheckout, loading_unavailable, cartCount, cartTotal }
 
 }
 
