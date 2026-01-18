@@ -1,89 +1,53 @@
-import { useEffect, useState } from "react";
-
-type ProductImage = {
-    id: string;
-    product_id: string;
-    image_url: string;
-};
-
-type Product = {
-    id: string;
-    product_name: string;
-    product_description: string;
-    images: ProductImage[];
-    qunatity: number;
-    price: number;
-};
-
-const ProductStep = ({
-    products,
-    onNext,
-}: {
-    products: Product[];
-    onNext: () => void;
-}) => {
-    const [total, setTotal] = useState<number>(0);
-    useEffect(() => {
-        const total = products.reduce((sum: number, product: Product) => {
-            return sum + product.price * product.qunatity;
-        }, 0);
-        setTotal(total);
-    }, [products])
+const ProductStep = ({ products, onNext }: any) => {
     return (
-        <>
-            <h2 className="text-2xl font-semibold mb-6">
-                🛒 Your Products
+        <div className="bg-white rounded-2xl p-6 shadow-sm space-y-6">
+
+            <h2 className="text-2xl font-semibold font-[Interif]">
+                Order Summary
             </h2>
 
             <div className="space-y-4">
-                {products.map((product) => (
+                {products.map((item: any) => (
                     <div
-                        key={product.id}
-                        className="flex gap-4 border rounded-lg p-4 shadow-sm"
+                        key={item.id}
+                        className="flex gap-4 p-4 rounded-xl bg-zinc-50"
                     >
-                        {product.images?.[0] && (
-                            <img
-                                src={product.images[0].image_url}
-                                alt=""
-                                className="w-28 h-28 object-cover rounded-md"
-                            />
-                        )}
+                        <img
+                            src={item.images[0].image_url}
+                            className="w-20 h-24 rounded-lg object-cover"
+                        />
 
-                        <div className="flex-1">
-                            <h3 className="text-lg font-medium">
-                                {product.product_name}
-                            </h3>
-
-                            <p className="text-gray-600 text-sm mt-1">
-                                {product.product_description}
-                            </p>
-
-                            <div className="flex gap-6 mt-3 text-sm">
-                                <span>
-                                    Qty: <b>{product.qunatity}</b>
-                                </span>
-                                <span>
-                                    Price: <b>₹{product.price}</b>
-                                </span>
+                        <div className="flex flex-col justify-between w-full">
+                            <div>
+                                <h3 className="font-medium">{item.product_name}</h3>
+                                <p className="text-sm text-zinc-500">
+                                    Qty: {item.qunatity}
+                                </p>
                             </div>
+
+                            <p className="font-semibold text-right">
+                                ₹ {item.price * item.qunatity}
+                            </p>
                         </div>
                     </div>
                 ))}
             </div>
 
-            <div className="mt-6 text-right flex items-center justify-between w-full">
-                <div className="flex items-center gap-2">
-                    <p className="text-lg font-semibold">Total :</p>
-                    <p className="text-lg font-light">${total}</p>
-                </div>
-                <button
-                    onClick={onNext}
-                    className="px-6 py-2 bg-black text-white rounded-md hover:bg-gray-800 transition cursor-pointer"
-                >
-                    Select Address
-                </button>
+            <div className="pt-4 border-t border-stone-100 flex justify-between font-semibold">
+                <span>Total</span>
+                <span>
+                    ₹ {products.reduce((acc: number, i: any) => acc + i.price * i.qunatity, 0)}
+                </span>
             </div>
-        </>
-    );
-};
-export default ProductStep;
+
+            <button
+                onClick={onNext}
+                className="w-full py-3 bg-black text-white rounded-xl"
+            >
+                Continue to Address
+            </button>
+        </div>
+    )
+}
+
+export default ProductStep
