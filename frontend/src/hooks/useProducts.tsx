@@ -8,10 +8,17 @@ interface ProductImage {
     product_id: string;
 }
 
-interface Product {
+interface Product_Type {
     id: string;
     product_name: string;
     product_description: string;
+}
+
+interface Product {
+    id: string;
+    color: string;
+    size: string
+    product: Product_Type
     price: number;
     quantity: number;
     images: ProductImage[];
