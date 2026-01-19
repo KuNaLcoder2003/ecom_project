@@ -69,7 +69,7 @@ app.post('/webhook/verify', express.raw({ type: 'application/json' }), async (re
 
                 const updated = await Promise.all(cart_products.map(async (item) => {
                     const product = await tx.product_variants.findUnique({
-                        where: { id: item.product_id },
+                        where: { id: item.product_variant_id },
                         select: { quantity: true },
                     });
                     if (!product) {
@@ -82,7 +82,7 @@ app.post('/webhook/verify', express.raw({ type: 'application/json' }), async (re
 
                     const result = await tx.product_variants.updateMany({
                         where: {
-                            id: item.product_id,
+                            id: item.product_variant_id,
                             quantity: { gte: item.qunatity }
                         },
                         data: {
