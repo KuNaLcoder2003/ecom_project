@@ -144,44 +144,57 @@ productsRouter.post('/', upload.array('images'), async (req: express.Request, re
 
 productsRouter.get('/', async (req: express.Request, res: express.Response) => {
     try {
-        const products = await prisma.products.findMany({});
-        if (!products || products.length == 0) {
-            res.status(404).json({
-                message: "No products to display",
-                valid: false
-            })
-            return
-        }
-        const ids = products.map(product => {
-            return product.id
-        })
 
-        const product_images = await prisma.product_images.findMany({
-            where: {
-                product_id: {
-                    in: ids
+        const response = await prisma.$transaction(async (tx) => {
+            const products = await tx.product_variants.findMany({
+                select: {
+                    size: true,
+                    product: true,
+                    id: true,
+                    price: true,
+                    quantity: true,
+                    color: true,
                 }
+            });
+            if (!products || products.length == 0) {
+                throw new Error("No products to display")
+
             }
-        })
-        let products_final = products.map((product) => {
-            let obj: any = { ...product };
-            product_images.map((image) => {
-                if (image.product_id == product.id) {
-                    if (obj["images"]) {
-                        obj.images = [...obj.images, image]
-                    } else {
-                        obj["images"] = [image]
+            const ids = products.map(product => {
+                return product.product.id
+            })
+
+            const product_images = await tx.product_images.findMany({
+                where: {
+                    product_id: {
+                        in: ids
                     }
                 }
             })
-            return obj;
-        })
+            const products_final = products.map((product) => {
+                let obj: any = { ...product };
+                product_images.map((image) => {
+                    if (image.product_id == product.product.id) {
+                        if (obj["images"]) {
+                            obj.images = [...obj.images, image]
+                        } else {
+                            obj["images"] = [image]
+                        }
+                    }
+                })
+                return obj;
+            })
+            return { products_final }
+
+        }, { timeout: 20000, maxWait: 10000 })
+
         res.status(200).json({
-            products: products_final,
+            products: response.products_final,
             valid: true
         })
     } catch (error) {
         res.status(500).json({
+            error: error,
             message: "Something went wrong",
             valid: false
         })
