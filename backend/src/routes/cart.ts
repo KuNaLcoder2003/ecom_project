@@ -180,7 +180,7 @@ cartRouter.get('/products', authMiddleware, async (req: any, res: express.Respon
         if (cart_products.length == 0) {
             return res.status(200).json({
                 message: 'Cart empty',
-                valid: true
+                valid: false
             })
         }
         const product_ids = cart_products.map(item => {
