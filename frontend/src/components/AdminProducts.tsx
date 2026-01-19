@@ -2,8 +2,7 @@ import type React from "react";
 import { useState } from "react";
 import useProducts from "../hooks/useProducts";
 import toast, { Toaster } from "react-hot-toast";
-import { type Product } from "@kunaljprsingh/ecom-types";
-import { ImagePlus } from "lucide-react";
+import { ImagePlus, X } from "lucide-react";
 type tabs = "Products" | "Add Product"
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 const AdminProducts: React.FC = () => {
@@ -28,7 +27,7 @@ const AdminProducts: React.FC = () => {
             {
                 tab == "Products" && products?.map(product => {
                     return (
-                        <ProductRow {...product} key={product.id} />
+                        <ProductRow variant_id={product.id} color={product.color} size={product.size} images={product.images} price={product.price} quantity={product.quantity} id={product.product.id} product_name={product.product.product_name} product_description={product.product.product_name} key={product.id} />
                     )
                 })
             }
@@ -39,13 +38,21 @@ const AdminProducts: React.FC = () => {
     )
 }
 
+
+interface Product_Variant {
+    price: number,
+    quantity: number,
+    color: string,
+    size: string
+}
+
 const AddProduct: React.FC = () => {
-    const [productDetails, setProductDetails] = useState<Product>({
+    const [productDetails, setProductDetails] = useState({
         product_name: "",
         product_description: "",
-        price: 0,
-        qunatity: 0,
     });
+
+    const [productVariants, setProductVariants] = useState<Product_Variant[]>([])
 
     const [images, setImages] = useState<File[]>([]);
 
@@ -71,7 +78,7 @@ const AddProduct: React.FC = () => {
 
     const uploadProduct = async () => {
 
-        if (!productDetails.product_name || !productDetails.product_description || !productDetails.price || !productDetails.qunatity) {
+        if (!productDetails.product_name || !productDetails.product_description || productVariants.length == 0) {
             toast.error("Please fill all the feilds")
             return
         }
@@ -83,10 +90,13 @@ const AddProduct: React.FC = () => {
         const formData: FormData = new FormData()
         formData.append('product_description', productDetails.product_description);
         formData.append('product_name', productDetails.product_name);
-        formData.append('price', `${productDetails.price}`);
-        formData.append('qunatity', `${productDetails.qunatity}`);
+        // formData.append('price', `${productDetails.price}`);
+        // formData.append('qunatity', `${productDetails.qunatity}`);
         for (let i = 0; i < images.length; i++) {
             formData.append('images', images[i]);
+        }
+        for (let i = 0; i < productVariants.length; i++) {
+            formData.append('variants', JSON.stringify(productVariants[i]))
         }
         try {
             const response = await fetch(`${BACKEND_URL}/product`, {
@@ -103,8 +113,8 @@ const AddProduct: React.FC = () => {
             setProductDetails({
                 product_description: "",
                 product_name: "",
-                price: 0,
-                qunatity: 0
+                // price: 0,
+                // qunatity: 0
             })
         } catch (error) {
             toast.error("Something went wrong")
@@ -112,8 +122,8 @@ const AddProduct: React.FC = () => {
             setProductDetails({
                 product_description: "",
                 product_name: "",
-                price: 0,
-                qunatity: 0
+                // price: 0,
+                // qunatity: 0
             })
         }
     }
@@ -146,31 +156,7 @@ const AddProduct: React.FC = () => {
                 />
             </div>
 
-
-            <div className="grid grid-cols-2 gap-4">
-                <div>
-                    <label className="text-sm font-medium">Price</label>
-                    <input
-                        type="number"
-                        name="price"
-                        value={productDetails.price}
-                        onChange={handleChange}
-                        className="mt-1 w-full rounded-lg border px-3 py-2 text-sm focus:ring-2 focus:ring-[#FF6B2C] outline-none"
-                    />
-                </div>
-
-                <div>
-                    <label className="text-sm font-medium">Quantity</label>
-                    <input
-                        type="number"
-                        name="qunatity"
-                        value={productDetails.qunatity}
-                        onChange={handleChange}
-                        className="mt-1 w-full rounded-lg border px-3 py-2 text-sm focus:ring-2 focus:ring-[#FF6B2C] outline-none"
-                    />
-                </div>
-            </div>
-
+            <ProductVariants productVariants={productVariants} setProductVariant={setProductVariants} />
 
             <div>
                 <label className="text-sm font-medium mb-2 block">
@@ -218,44 +204,166 @@ interface ProductImage {
 
 interface ProductObj {
     id: string;
+    variant_id: string;
     product_name: string;
     product_description: string;
     price: number;
     quantity: number;
+    color: string;
+    size: string;
     images: ProductImage[];
+
 }
-const ProductRow: React.FC<ProductObj> = ({ price, product_name, quantity, images, id }) => {
+const ProductRow: React.FC<ProductObj> = ({
+    price,
+    product_name,
+    quantity,
+    images,
+    id,
+    variant_id,
+    color,
+    size
+}) => {
     return (
-        <div className="w-full flex items-center gap-4 px-4 py-3 bg-white rounded-lg border hover:shadow-sm transition">
+        <div className="group relative flex items-center gap-5 rounded-2xl bg-white px-5 py-4 transition-all hover:shadow-md hover:border-gray-300">
 
-
-            <div className="w-14 h-14 flex-shrink-0 rounded-md overflow-hidden bg-gray-100">
+            {/* Image */}
+            <div className="relative h-16 w-16 flex-shrink-0 overflow-hidden rounded-xl bg-gray-100">
                 <img
                     src={images?.[0]?.image_url || "/placeholder.png"}
                     alt={product_name}
-                    className="w-full h-full object-cover"
+                    className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
                 />
             </div>
 
+            {/* Product Info */}
+            <div className="flex flex-1 flex-col gap-1 overflow-hidden">
+                <p className="truncate text-sm font-semibold text-gray-900">
+                    {product_name}
+                </p>
 
-            <div className="w-[160px] text-xs text-gray-500 truncate">
-                {id}
+                <div className="flex items-center gap-2 text-xs text-gray-500">
+                    <span className="rounded-md bg-gray-100 px-2 py-0.5">
+                        {color}
+                    </span>
+                    <span className="rounded-md bg-gray-100 px-2 py-0.5">
+                        {size}
+                    </span>
+                </div>
+
+                <div className="flex item-center gap-2">
+                    <span className="text-[11px] text-gray-400 truncate">
+                        <span className="font-bold">ID</span>: {id}
+                    </span>
+                    <span className="text-[11px] text-gray-400 truncate">
+                        <span className="font-bold">Varinat ID</span>: {variant_id}
+                    </span>
+                </div>
             </div>
 
+            {/* Price */}
+            <div className="flex flex-col items-end gap-1">
+                <span className="text-sm font-semibold text-gray-900">
+                    ₹{price}
+                </span>
 
-            <div className="flex-1 font-medium truncate">
-                {product_name}
+                <span className="text-xs text-gray-500">
+                    Qty · {quantity}
+                </span>
+            </div>
+        </div>
+    )
+}
+
+
+const ProductVariants: React.FC<{ productVariants: Product_Variant[], setProductVariant: React.Dispatch<React.SetStateAction<Product_Variant[]>> }> = ({ productVariants, setProductVariant }) => {
+    const [size, setSize] = useState<string>("")
+    const [color, setColors] = useState<string>("")
+    const [quantity, setQuantity] = useState<number>(1)
+    const [price, setPrice] = useState<number>(0);
+
+    const addVariant = () => {
+        if (!size || !color || quantity <= 0 || price <= 0) {
+            toast.error("Please enter all details")
+            return
+        }
+        const exists = productVariants.some(item => item.color == color && item.size == size)
+        if (exists) {
+            toast.error("Variant already exists")
+            return
+        }
+        setProductVariant(val => [...val, { price, quantity, size, color }])
+        setColors("")
+        setQuantity(1)
+    }
+
+    const removeVariant = (index: number) => {
+        setProductVariant(val => val.filter((_, idx) => idx !== index))
+    }
+    return (
+        <div className="space-y-4">
+            <h3 className="text-sm font-semibold">Product Variants</h3>
+
+            <div className="grid grid-cols-3 gap-3">
+                <input
+                    placeholder="Size (S, M, L)"
+                    value={size}
+                    onChange={e => setSize(e.target.value)}
+                    className="rounded-lg border px-3 py-2 text-sm"
+                />
+
+                <input
+                    placeholder="Color (Red, Blue)"
+                    value={color}
+                    onChange={e => setColors(e.target.value)}
+                    className="rounded-lg border px-3 py-2 text-sm"
+                />
+
+                <input
+                    type="number"
+                    placeholder="Qty"
+                    value={quantity}
+                    onChange={e => setQuantity(+e.target.value)}
+                    className="rounded-lg border px-3 py-2 text-sm"
+                />
+                <input
+                    type="number"
+                    placeholder="Price"
+                    value={price}
+                    onChange={e => setPrice(+e.target.value)}
+                    className="rounded-lg border px-3 py-2 text-sm"
+                />
             </div>
 
+            <button
+                type="button"
+                onClick={addVariant}
+                className="bg-black text-white text-sm px-4 py-2 rounded-lg"
+            >
+                Add Variant
+            </button>
 
-            <div className="w-[100px] text-sm font-semibold text-gray-700">
-                ₹{price}
-            </div>
+            {productVariants.length > 0 && (
+                <div className="space-y-2">
+                    {productVariants.map((variant, index) => (
+                        <div
+                            key={index}
+                            className="flex items-center justify-between border rounded-lg px-3 py-2 text-sm"
+                        >
+                            <span>
+                                {variant.color} / {variant.size} — Qty: {variant.quantity}
+                            </span>
 
-
-            <div className="w-[90px] text-sm text-gray-600">
-                Qty: {quantity}
-            </div>
+                            <button
+                                onClick={() => removeVariant(index)}
+                                className="text-red-500"
+                            >
+                                <X size={16} />
+                            </button>
+                        </div>
+                    ))}
+                </div>
+            )}
         </div>
     )
 }
