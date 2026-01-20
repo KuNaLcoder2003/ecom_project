@@ -1,7 +1,7 @@
 import express from "express";
 import { PrismaClient } from "@prisma/client";
 import { PrismaPg } from '@prisma/adapter-pg'
-import { sign_in, sign_up, type Sign_In, type Sign_Up } from "@kunaljprsingh/ecom-types"
+import { order, sign_in, sign_up, type Sign_In, type Sign_Up } from "@kunaljprsingh/ecom-types"
 import getToken from "../function/generateToken.js";
 const userRouter = express.Router();
 import dotenv from "dotenv"
@@ -276,6 +276,63 @@ userRouter.post('/admin/signin', async (req: express.Request, res: express.Respo
     } catch (error) {
         res.status(500).json({
             message: 'Something went wrong'
+        })
+    }
+})
+
+userRouter.get('/admin', async (req: express.Request, res: express.Response) => {
+    try {
+        const response = await prisma.$transaction(async (tx) => {
+            const payments = await tx.payments.findMany({
+                where: {
+                    completed: true
+                },
+                select: {
+                    amount: true
+                }
+            })
+
+            const orders = await tx.order.findMany({
+                where: {
+                    status: true,
+                },
+                select: {
+                    user: true,
+                    payment: true,
+                    status: true,
+                    id: true
+                }
+            })
+
+            const products = await tx.products.findMany({})
+            const product_varinats = await tx.product_variants.findMany({})
+            const users = await tx.users.findMany({})
+            return { product_varinats, products, users, orders, payments }
+        }, { timeout: 20000, maxWait: 10000 })
+
+        const order_details = response.orders.map(item => {
+            return {
+                user_name: item.user.first_name + item.user.last_name,
+                status: item.status,
+                amount: item.payment?.amount,
+                order_id: item.id
+            }
+        })
+
+        res.status(200).json({
+            products: response.products.length,
+            product_variants: response.product_varinats.length,
+            orders: response.orders.length,
+            users: response.users.length,
+            payment: response.payments.reduce((sum, b) => sum + b.amount, 0),
+            order_details: order_details,
+            valid: true
+        })
+    } catch (error) {
+        res.status(500).json({
+            error: error,
+            message: "Something went wrong",
+            valid: false
         })
     }
 })
