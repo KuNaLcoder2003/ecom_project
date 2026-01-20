@@ -1,5 +1,5 @@
 import type React from "react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import useProducts from "../hooks/useProducts";
 import toast, { Toaster } from "react-hot-toast";
 import { ImagePlus, X } from "lucide-react";
@@ -17,7 +17,7 @@ const AdminProducts: React.FC = () => {
         return <p>No product added yet</p>
     }
     return (
-        <div className="w-full space-y-4 p-4">
+        <div className="w-full space-y-4 p-4 h-full">
             <Toaster />
             <div className="flex items-center gap-4 w-xl">
                 <div onClick={() => setTab("Products")} className={`${tab == "Products" ? "bg-black text-white rounded-lg" : ""} px-6 py-2 text-center cursor-pointer`}>Products</div>
@@ -47,6 +47,10 @@ interface Product_Variant {
 }
 
 const AddProduct: React.FC = () => {
+
+    useEffect(() => {
+        console.log("AddProduct mounted");
+    }, []);
     const [productDetails, setProductDetails] = useState({
         product_name: "",
         product_description: "",
@@ -166,6 +170,7 @@ const AddProduct: React.FC = () => {
                 <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
                     {Array.from({ length: 5 }).map((_, index) => (
                         <label
+                            htmlFor={`product-image-${index}`}
                             key={index}
                             className="relative flex flex-col items-center justify-center border-2 border-dashed rounded-lg p-4 text-center cursor-pointer hover:border-[#FF6B2C] transition"
                         >
@@ -176,6 +181,7 @@ const AddProduct: React.FC = () => {
 
                             <input
                                 type="file"
+                                id={`product-image-${index}`}
                                 accept="image/*"
                                 className="hidden"
                                 onChange={(e) => handleImageChange(e, index)}
@@ -183,6 +189,7 @@ const AddProduct: React.FC = () => {
                         </label>
                     ))}
                 </div>
+
             </div>
 
 
