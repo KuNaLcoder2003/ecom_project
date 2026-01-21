@@ -294,7 +294,11 @@ userRouter.get('/admin', async (req: express.Request, res: express.Response) => 
 
             const orders = await tx.order.findMany({
                 where: {
-                    status: true,
+                    OR: [
+                        { status: "Payment Succesfull" },
+                        { status: "Order Delivered" },
+                        { status: "Order Shipped" }
+                    ]
                 },
                 select: {
                     user: true,
