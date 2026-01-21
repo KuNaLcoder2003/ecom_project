@@ -56,7 +56,7 @@ app.post('/webhook/verify', express.raw({ type: 'application/json' }), async (re
                     }
                 })
                 if (!order) throw new Error('Order not found');
-                if (order?.status === true) {
+                if (order?.status === "Payment Succesfull") {
                     return;
                 }
 
@@ -123,7 +123,7 @@ app.post('/webhook/verify', express.raw({ type: 'application/json' }), async (re
                         id: order_id
                     },
                     data: {
-                        status: true
+                        status: "Payment Succesfull"
                     }
                 })
                 await tx.payments.update({
