@@ -86,7 +86,7 @@ orderRouter.post('/createOrder', authMiddleware, async (req: any, res: express.R
             const newOrder = await tx.order.create({
                 data: {
                     user_id: userId,
-                    status: false,
+                    status: "Payment Pending",
                     address_id: adress_id,
                     cart_id: cart_id,
                 }
