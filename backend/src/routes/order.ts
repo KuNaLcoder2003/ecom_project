@@ -334,6 +334,43 @@ orderRouter.get('/orderHistrory', authMiddleware, async (req: express.Request, r
     }
 })
 
+orderRouter.get('/admin/orderDetails', adminMiddleware, async (req: express.Request, res: express.Response) => {
+    try {
+        const response = await prisma.$transaction(async (tx) => {
+            const orders = await tx.order.findMany({
+                select: {
+                    id: true,
+                    user: true,
+                    status: true,
+                    ordered_product: true
+                }
+            });
+
+            return {
+                orders
+            }
+        })
+
+        if (!response || !response.orders) {
+            res.status(403).json({
+                message: "Unable to fetch orders",
+                valid: false
+            })
+            return
+        }
+        res.status(200).json({
+            orders: response.orders,
+            valid: true
+        })
+    } catch (error) {
+        res.status(500).json({
+            error: error,
+            message: "Something went wrong",
+            valid: false
+        })
+    }
+})
+
 
 
 export default orderRouter;
