@@ -1,44 +1,28 @@
 import { useEffect, useState } from "react";
-export interface OrderItem {
-    product: Product;
-    order: Order;
-    qunatity: number; // typo preserved from API
-}
-
-export interface Product {
+interface orders {
     id: string;
-    product_name: string;
-    product_description: string;
-    price: number;
-    quantity: number;
-}
-
-export interface Order {
-    id: string;
-    user_id: string;
-    cart_id: string;
-    address_id: string;
-    status: boolean;
-}
-
-interface Orders {
-    id: string;
-    status: boolean;
-    user_id: string;
-    cart_id: string;
-    address_id: string;
-}
-interface MergedItem {
-    images: string[];
-    price: number;
-    qunatity: number; // keeping typo as-is to match backend
-    product: Product;
+    status: string;
+    user: {
+        id: string;
+        email: string;
+        first_name: string;
+        last_name: string;
+        password: string;
+        gender: string;
+        age: string;
+    };
+    ordered_product: {
+        product_id: string;
+        price: number;
+        qunatity: number;
+        order_id: string;
+    }[];
 }
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 function useAdminOrder() {
-    const [orders, setOrders] = useState<Orders[]>();
-    const [ordered_products, setOrderdProducts] = useState<MergedItem[]>()
+    const [orders, setOrders] = useState<orders[]>();
+    // const [ordered_products, setOrderdProducts] = useState<MergedItem[]>()
     const [loading, setLoading] = useState<boolean>(false);
     const [loading_detail, setLoadingDetail] = useState<boolean>(false);
     const [error, setError] = useState<string>("");
@@ -46,8 +30,8 @@ function useAdminOrder() {
         try {
             setLoading(true)
             const token = localStorage.getItem('token') as string;
-            fetch(`${BACKEND_URL}/order/getAllOrders`, {
-                method: 'POST',
+            fetch(`${BACKEND_URL}/order/admin/orderDetails`, {
+                method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': token
@@ -59,7 +43,7 @@ function useAdminOrder() {
                     setError(error);
                 } else {
                     setLoading(false)
-                    setOrders(data.order);
+                    setOrders(data.orders);
                 }
             })
         } catch (error) {
@@ -81,7 +65,7 @@ function useAdminOrder() {
             })
             const data = await reponse.json();
             if (data.valid) {
-                setOrderdProducts(data.ordered_products);
+                // setOrderdProducts(data.ordered_products);
                 setLoadingDetail(false)
             } else {
                 setLoadingDetail(false)
@@ -90,6 +74,6 @@ function useAdminOrder() {
             setLoadingDetail(false)
         }
     }
-    return { orders, error, loading, ordered_products, getOrderdProduct, loading_detail }
+    return { orders, error, loading, getOrderdProduct, loading_detail }
 }
 export default useAdminOrder;
