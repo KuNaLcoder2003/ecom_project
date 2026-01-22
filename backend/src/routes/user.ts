@@ -341,4 +341,40 @@ userRouter.get('/admin', async (req: express.Request, res: express.Response) => 
     }
 })
 
+userRouter.get('/admin/payments', async (req: express.Request, res: express.Response) => {
+    try {
+        const response = await prisma.$transaction(async (tx) => {
+            const payments = await tx.payments.findMany({
+                select: {
+                    id: true,
+                    user: true,
+                    order_id: true,
+                    amount: true,
+                    completed: true,
+                    created_at: true
+                }
+            })
+            return { payments }
+        }, { timeout: 20000, maxWait: 10000 })
+        if (!response || !response.payments) {
+            res.status(403).json({
+                message: "Unable to fetch payments",
+                valid: false
+            })
+            return
+        }
+        res.status(200).json({
+            payments: response.payments,
+            valid: true
+        })
+
+    } catch (error) {
+        res.status(500).json({
+            error: error,
+            message: "Something went wrong",
+            valid: false
+        })
+    }
+})
+
 export default userRouter;
