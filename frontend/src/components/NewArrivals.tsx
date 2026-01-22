@@ -1,40 +1,41 @@
 import type React from "react";
 import { useState } from "react";
 import { motion } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 
 const New_Arrival = [
     {
-        product_id: "1",
+        product_id: "2b629c53-2b1c-438a-834e-d05bd19c82b4",
         product_name: "Skyline Sweat",
         product_price: 650.60,
         product_image: "https://framerusercontent.com/images/BWWhfOFEXT1fwMJKufIWexbmJpw.png"
     },
     {
-        product_id: "2",
+        product_id: "508af869-6693-4b9e-8b1c-f6c35ea3de7b",
         product_name: "Nightfall Hoodie",
         product_price: 650.60,
         product_image: "https://framerusercontent.com/images/yGluYsGwgJzhvCl9DklkFsu5g.png"
     },
     {
-        product_id: "3",
+        product_id: "88c66642-3beb-4169-bb68-49812428121d",
         product_name: "Moss Layer",
         product_price: 650.60,
         product_image: "https://framerusercontent.com/images/3UXm6eEVUQj5N8Mh38UO7cBR74.png"
     },
     {
-        product_id: "4",
+        product_id: "5f78a731-71fe-4fce-a5c0-ff8b6fd3e979",
         product_name: "Gradient Zip",
         product_price: 650.60,
         product_image: "https://framerusercontent.com/images/meNUvIFrqOr6z2XFxGCjX4.png"
     },
     {
-        product_id: "5",
+        product_id: "25583016-db49-44d8-9be6-af17a6559391",
         product_name: "Eco Fleece",
         product_price: 650.60,
         product_image: "https://framerusercontent.com/images/qv753nhXHN8tIVDjGrH9mHxIoso.png"
     },
     {
-        product_id: "6",
+        product_id: "81dd98dd-b7f5-4c1d-b247-f135596c5ebb",
         product_name: "Blue Edge",
         product_price: 650.60,
         product_image: "https://framerusercontent.com/images/TlSRAymQmyp6kGX4EZrGdUlL4.png"
@@ -52,7 +53,7 @@ const NewArrivals: React.FC = () => {
                 {
                     arr1.map(item => {
                         return (
-                            <ProductCard key={item.product_id} url={item.product_image} product_name={item.product_name} product_price={item.product_price} />
+                            <ProductCard id={item.product_id} key={item.product_id} url={item.product_image} product_name={item.product_name} product_price={item.product_price} />
                         )
                     })
                 }
@@ -61,7 +62,7 @@ const NewArrivals: React.FC = () => {
                 {
                     arr2.map(item => {
                         return (
-                            <ProductCard key={item.product_id} url={item.product_image} product_name={item.product_name} product_price={item.product_price} />
+                            <ProductCard id={item.product_id} key={item.product_id} url={item.product_image} product_name={item.product_name} product_price={item.product_price} />
                         )
                     })
                 }
@@ -93,10 +94,11 @@ export const SectionHeading: React.FC<{ heading: string, subHeading: string }> =
     )
 }
 
-export const ProductCard: React.FC<{ url: string, product_name: string, product_price: number }> = ({ url, product_name, product_price }) => {
+export const ProductCard: React.FC<{ url: string, product_name: string, product_price: number, id: string }> = ({ url, product_name, product_price, id }) => {
     const [hovered, setHovered] = useState<boolean>(false)
+    const navigate = useNavigate();
     return (
-        <div onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)} className="w-[100%] lg:w-[32%] flex flex-col items-baseline gap-2">
+        <div onClick={() => { navigate(`/product/${id}`) }} onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)} className="w-[100%] lg:w-[32%] flex flex-col items-baseline gap-2">
             <div className="w-full h-auto relative overflow-hidden scale-[1] realtive">
                 <div className="w-full h-auto flex items-center justify-center">
                     <img src={url} className="object-fit rounded-lg hover:scale-[1.07]" style={{
