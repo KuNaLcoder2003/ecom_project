@@ -1,13 +1,13 @@
 import type React from "react";
 import useAdminOrder from "../hooks/useAdminOrder";
-import { LoaderCircle } from "lucide-react";
+import { LoaderCircle, MoreVertical } from "lucide-react";
 import toast from "react-hot-toast";
-import { useState } from "react";
+// import { useState } from "react";
 
 const AdminOrders: React.FC = () => {
-    const { orders, loading, error, loading_detail, ordered_products, getOrderdProduct } = useAdminOrder();
-    const [isDetailsOpen, setIsDetailsOpen] = useState<boolean>(false);
-    const [selectedOrder, setSelectedOrder] = useState<string>("");
+    const { orders, loading, error } = useAdminOrder();
+    // const [isDetailsOpen, setIsDetailsOpen] = useState<boolean>(false);
+    // const [selectedOrder, setSelectedOrder] = useState<string>("");
     if (loading) {
         return <div className="flex items-center justify-center">
             <LoaderCircle />
@@ -28,113 +28,68 @@ const AdminOrders: React.FC = () => {
         </div>
     }
     return (
-        <div className="w-full mt-4 mb-4 flex flex-col items-baseline gap-4">
-            {orders.map((item) => (
-                <>
-                    <div
-                        key={item.id}
-                        className="w-full p-2 flex flex-nowrap items-center justify-between gap-6 border-b"
-                    >
-
-                        <div className="flex items-center gap-2 min-w-0">
-                            <h3 className="text-lg font-semibold whitespace-nowrap">
-                                Order Id:
-                            </h3>
-                            <p className="whitespace-nowrap overflow-hidden text-ellipsis max-w-[250px]">
-                                {item.id}
-                            </p>
-                        </div>
-
-
-                        <div className="flex items-center gap-2 whitespace-nowrap">
-                            <h3 className="text-lg font-semibold">Status:</h3>
-                            <p>{item.status ? "Completed" : "Pending or Cancelled"}</p>
-                        </div>
-
-
-                        <button onClick={() => {
-                            setSelectedOrder(item.id)
-                            setIsDetailsOpen(true)
-                            getOrderdProduct(item.id)
-                        }
-                        } className="text-md text-white px-6 py-2 bg-black rounded-lg whitespace-nowrap cursor-pointer">
-                            View Details
-                        </button>
-
+        <div className="bg-white rounded-2xl shadow-lg border border-slate-200">
+            <div className="p-6 border-b border-slate-200">
+                <div className="flex items-center justify-between">
+                    <div>
+                        <h2 className="text-xl font-bold text-slate-800">All Orders</h2>
+                        <p className="text-sm text-slate-500 mt-1">Manage and track all customer orders</p>
                     </div>
-                    {
-                        (isDetailsOpen && selectedOrder == item.id) ?
+                    <button className="px-4 py-2 bg-gradient-to-r from-blue-500 to-cyan-600 text-white rounded-lg font-semibold hover:shadow-lg transition">
+                        Export Orders
+                    </button>
+                </div>
+            </div>
 
-                            loading_detail ? < div className="flex items-center justify-between border-b py-4 animate-pulse">
-                                <div className="flex items-center gap-4 w-full">
-
-                                    <div className="w-16 h-16 bg-gray-200 rounded" />
-
-
-                                    <div className="w-1/3 space-y-2">
-                                        <div className="h-4 bg-gray-200 rounded w-3/4" />
-                                        <div className="h-3 bg-gray-200 rounded w-full" />
+            <div className="overflow-x-auto">
+                <table className="w-full">
+                    <thead className="bg-slate-50">
+                        <tr>
+                            <th className="px-6 py-4 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">Order ID</th>
+                            <th className="px-6 py-4 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">Customer</th>
+                            <th className="px-6 py-4 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">Items</th>
+                            <th className="px-6 py-4 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">Total</th>
+                            <th className="px-6 py-4 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">Status</th>
+                            {/* <th className="px-6 py-4 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">Date</th> */}
+                            <th className="px-6 py-4 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-200">
+                        {orders.map((order, index) => (
+                            <tr key={index} className="hover:bg-slate-50 transition">
+                                <td className="px-6 py-4 whitespace-nowrap">
+                                    <span className="font-semibold text-slate-800">{order.id}</span>
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap">
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center text-white text-sm font-semibold">
+                                            {order.user.first_name.charAt(0)}
+                                        </div>
+                                        <span className="text-slate-700">{order.user.first_name} {order.user.last_name}</span>
                                     </div>
-
-
-                                    <div className="w-32 h-4 bg-gray-200 rounded" />
-
-
-                                    <div className="w-24 h-4 bg-gray-200 rounded" />
-                                </div>
-
-
-                                <div className="ml-4 w-28 h-9 bg-gray-200 rounded" />
-                            </div > : ordered_products && ordered_products?.length > 0 ?
-                                <div className="flex flex-col items-center m-auto py-4 gap-4">
-
-                                    {
-                                        ordered_products.map(item => {
-                                            return (
-                                                <div className="flex items-center gap-4 w-full">
-
-                                                    <img
-                                                        src={item.images[0]}
-                                                        alt={item.product.product_name}
-                                                        className="w-16 h-16 object-cover rounded"
-                                                    />
-
-
-                                                    <div className="w-1/3">
-                                                        <p className="font-medium">{item.product.product_name}</p>
-                                                        <p className="text-sm text-gray-500 line-clamp-1">
-                                                            {item.product.product_description}
-                                                        </p>
-                                                    </div>
-
-
-                                                    <div className="w-32 font-semibold text-green-600">
-                                                        ₹{item.price}
-                                                    </div>
-
-
-                                                    <div className="w-24 text-gray-600">
-                                                        Qty: {item.qunatity}
-                                                    </div>
-                                                    <div className="w-30 text-gray-600">
-                                                        Total : {item.qunatity * item.price}
-                                                    </div>
-                                                </div>
-                                            )
-                                        })
-                                    }
-
-
-                                </div>
-                                :
-                                <p>No Products to show</p>
-                            : null
-                    }
-                </>
-
-            ))
-            }
-        </div >
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap text-slate-600">{order.ordered_product.length}</td>
+                                <td className="px-6 py-4 whitespace-nowrap font-semibold text-slate-800">{order.ordered_product.reduce((sum, b) => sum + b.price * b.qunatity, 0)}</td>
+                                <td className="px-6 py-4 whitespace-nowrap">
+                                    <span className={`px-3 py-1 rounded-full text-xs font-semibold ${order.status === 'Delivered' ? 'bg-green-100 text-green-700' :
+                                        order.status === 'Shipped' ? 'bg-blue-100 text-blue-700' :
+                                            order.status === 'Payment Pending' ? 'bg-yellow-100 text-yellow-700' :
+                                                order.status == 'Payment Succesfull' ? 'bg-green-200 text-green-700' : 'bg-orange-100 text-orange-700'
+                                        }`}>
+                                        {order.status}
+                                    </span>
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap">
+                                    <button className="p-2 hover:bg-slate-100 rounded-lg transition">
+                                        <MoreVertical className="w-5 h-5 text-slate-600" />
+                                    </button>
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
+        </div>
 
     )
 }
