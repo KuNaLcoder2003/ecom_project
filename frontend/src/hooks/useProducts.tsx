@@ -1,6 +1,6 @@
 
 import { useEffect, useState } from "react"
-import { useLocation } from "react-router-dom";
+
 
 interface ProductImage {
     id: string;
@@ -26,14 +26,16 @@ interface Product {
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 const useProducts = () => {
-    const path = useLocation();
+
     const [products, setProducts] = useState<Product[] | null>(null)
     const [error, setError] = useState<string>("")
     const [valid, setValid] = useState<boolean>(false)
+    const [loading, setLoading] = useState<boolean>(false)
+
     useEffect(() => {
-        const id = path.pathname.split('/').at(-1);
-        console.log(id);
+
         try {
+            setLoading(true)
             fetch(`${BACKEND_URL}/product`, {
                 method: 'GET',
                 headers: {
@@ -44,15 +46,18 @@ const useProducts = () => {
                 setValid(data.valid);
                 if (!data || !data.valid) {
                     setError(data.message);
+                    setLoading(false)
                 } else {
                     setProducts(data.products);
+                    setLoading(false)
                 }
             })
         } catch (error) {
             setError("Something went wrong")
+            setLoading(false)
         }
     }, [])
-    return { products, error, valid }
+    return { products, error, valid, loading }
 }
 
 export default useProducts;
