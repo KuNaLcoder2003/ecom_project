@@ -2,12 +2,12 @@ import type React from "react";
 import { useEffect, useState } from "react";
 import useProducts from "../hooks/useProducts";
 import toast, { Toaster } from "react-hot-toast";
-import { ImagePlus, X } from "lucide-react";
+import { ImagePlus, Loader, X } from "lucide-react";
 type tabs = "Products" | "Add Product"
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 const AdminProducts: React.FC = () => {
     const [tab, setTab] = useState<tabs>("Products")
-    const { products, error } = useProducts()
+    const { products, error, loading } = useProducts()
 
     if (error) {
         toast.error(error)
@@ -17,24 +17,32 @@ const AdminProducts: React.FC = () => {
         return <p>No product added yet</p>
     }
     return (
-        <div className="w-full space-y-4 p-4 h-full">
-            <Toaster />
-            <div className="flex items-center gap-4 w-xl">
-                <div onClick={() => setTab("Products")} className={`${tab == "Products" ? "bg-black text-white rounded-lg" : ""} px-6 py-2 text-center cursor-pointer`}>Products</div>
-                <div onClick={() => setTab("Add Product")} className={`${tab == "Add Product" ? "bg-black text-white rounded-lg" : ""} px-6 py-2 text-center cursor-pointer`}>Add Product</div>
-            </div>
+        <>
+            {
+                loading ? <Loader /> : <div className="w-full space-y-4 p-4">
+                    <Toaster />
+                    <div className="flex items-center gap-4 w-xl">
+                        <div onClick={() => setTab("Products")} className={`${tab == "Products" ? "bg-black text-white rounded-lg" : ""} px-6 py-2 text-center cursor-pointer`}>Products</div>
+                        <div onClick={() => setTab("Add Product")} className={`${tab == "Add Product" ? "bg-black text-white rounded-lg" : ""} px-6 py-2 text-center cursor-pointer`}>Add Product</div>
+                    </div>
 
-            {
-                tab == "Products" && products?.map(product => {
-                    return (
-                        <ProductRow variant_id={product.id} color={product.color} size={product.size} images={product.images} price={product.price} quantity={product.quantity} id={product.product.id} product_name={product.product.product_name} product_description={product.product.product_name} key={product.id} />
-                    )
-                })
+                    <div className="w-full h-screen overflow-y-scroll flex flex-col items-baseline gap-4">
+                        {
+                            tab == "Products" && products?.map(product => {
+                                return (
+                                    <ProductRow variant_id={product.id} color={product.color} size={product.size} images={product.images} price={product.price} quantity={product.quantity} id={product.product.id} product_name={product.product.product_name} product_description={product.product.product_name} key={product.id} />
+                                )
+                            })
+                        }
+                    </div>
+
+
+                    {
+                        tab == "Add Product" && <AddProduct />
+                    }
+                </div>
             }
-            {
-                tab == "Add Product" && <AddProduct />
-            }
-        </div>
+        </>
     )
 }
 
@@ -232,7 +240,7 @@ const ProductRow: React.FC<ProductObj> = ({
     size
 }) => {
     return (
-        <div className="group relative flex items-center gap-5 rounded-2xl bg-white px-5 py-4 transition-all hover:shadow-md hover:border-gray-300">
+        <div className="w-full group relative flex items-center gap-5 rounded-2xl bg-white px-5 py-4 transition-all hover:shadow-md hover:border-gray-300">
 
             {/* Image */}
             <div className="relative h-16 w-16 flex-shrink-0 overflow-hidden rounded-xl bg-gray-100">
