@@ -64,8 +64,8 @@ orderRouter.post('/createOrder', authMiddleware, async (req: any, res: express.R
     try {
         const userId = req.userId;
         console.log(userId)
-        const adress_id: string = req.headers.address_id as string;
-        const cart_id: string = req.headers.cart_id as string;
+        const adress_id: string = req.body.address_id as string;
+        const cart_id: string = req.body.cart_id as string;
         if (!userId) {
             res.status(401).json({
                 message: "Unauthorized",
