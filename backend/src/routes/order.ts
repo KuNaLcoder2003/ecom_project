@@ -85,20 +85,14 @@ orderRouter.post('/createOrder', authMiddleware, async (req: any, res: express.R
             })
             return
         }
+        console.log(user)
         const response = await prisma.$transaction(async (tx) => {
             const newOrder = await tx.order.create({
                 data: {
-
                     status: "Payment Pending",
-                    user: {
-                        connect: { id: userId }
-                    },
-                    cart: {
-                        connect: { id: cart_id }
-                    },
-                    address: {
-                        connect: { id: adress_id }
-                    }
+                    user_id: user.id,
+                    address_id: adress_id,
+                    cart_id: cart_id
                 }
             })
 
