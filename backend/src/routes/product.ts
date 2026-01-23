@@ -48,6 +48,7 @@ interface Product_Type {
     product_name: string;
     product_description: string;
     images: ProductImage[];
+    price?: number
 }
 
 productsRouter.post('/', upload.array('images'), async (req: express.Request, res: express.Response) => {
@@ -320,6 +321,71 @@ productsRouter.get('/getProduct/:keyword', async (req: express.Request, res: exp
             message: "Something went wrong",
             valid: false
         })
+    }
+})
+
+productsRouter.get('/category/:word', async (req: express.Request, res: express.Response) => {
+    try {
+        const word = req.params.word
+        if (!word) {
+            res.status(400).json({
+                message: "Bad Request",
+                valid: false
+            })
+            return
+        }
+        const response = await prisma.$transaction(async (tx) => {
+            const products = await tx.products.findMany({
+                where: {
+                    category: word
+                }
+            })
+            return { products }
+        }, { timeout: 20000, maxWait: 10000 })
+
+        if (!response || !response.products) {
+            res.status(403).json({
+                message: 'Unable to fetch the products at the moment',
+                valid: false,
+            })
+            return
+        }
+        const ids = response.products.map(item => {
+            return item.id
+        })
+
+        const product_images = await prisma.product_images.findMany({
+            where: {
+                product_id: {
+                    in: ids
+                }
+            }
+        })
+
+        if (!product_images) {
+            res.status(403).json({
+                message: 'Unable to fetch the products at the moment',
+                valid: false,
+            })
+            return
+        }
+
+        const products = response.products.map(item => {
+            let temp: Product_Type = { ...item, images: [] }
+            product_images.map(obj => {
+                if (obj.product_id == item.id) {
+                    temp.images = [...temp.images, obj]
+                }
+            })
+            return temp;
+        })
+        res.status(200).json({
+            products: products,
+            valid: true
+        })
+
+    } catch (error) {
+
     }
 })
 export default productsRouter;
