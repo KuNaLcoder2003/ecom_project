@@ -4,6 +4,8 @@ import { PrismaClient } from '@prisma/client';
 import authMiddleware from "../middlewares/authMiddleware.js";
 import Stripe from "stripe";
 import adminMiddleware from "../middlewares/adminMiddleware.js";
+import ExcelJS from "exceljs";
+const workbook = new ExcelJS.Workbook();
 const connectionString = `${process.env.DATABASE_URL}`
 const adapter = new PrismaPg({ connectionString })
 const prisma = new PrismaClient({ adapter });
@@ -363,6 +365,78 @@ orderRouter.get('/admin/orderDetails', adminMiddleware, async (req: express.Requ
             valid: true
         })
     } catch (error) {
+        res.status(500).json({
+            error: error,
+            message: "Something went wrong",
+            valid: false
+        })
+    }
+})
+
+orderRouter.get('/admin/downloadOrders', adminMiddleware, async (req: express.Request, res: express.Response) => {
+    try {
+        const worksheet = workbook.addWorksheet("orders");
+        const response = await prisma.$transaction(async (tx) => {
+            const orders = await tx.order.findMany({
+                select: {
+                    id: true,
+                    user: {
+                        select: {
+                            id: true,
+                            first_name: true
+                        }
+                    },
+                    status: true,
+                    ordered_product: true
+                }
+            });
+
+            return {
+                orders
+            }
+        })
+
+        if (!response || !response.orders) {
+            res.status(403).json({
+                message: "Unable to fetch orders",
+                valid: false
+            })
+            return
+        }
+        worksheet.columns = [
+            { header: "Order ID", key: "id", width: 15 },
+            { header: "Status", key: "status", width: 20 },
+            { header: "User Name", key: "userName", width: 25 },
+            { header: "User ID", key: "userId", width: 15 },
+            { header: "Products Count", key: "productCount", width: 18 },
+            { header: "Order Value", key: "amount", width: 18 }
+        ];
+        response.orders.forEach(order => {
+            worksheet.addRow({
+                id: order.id,
+                status: order.status,
+                userName: order.user.first_name,
+                userId: order.user.id,
+                productCount: order.ordered_product.length,
+                amount: order.ordered_product.reduce((sum, b) => sum + b.price * b.qunatity, 0)
+            });
+        })
+        worksheet.getRow(1).font = { bold: true };
+        res.setHeader(
+            "Content-Type",
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        );
+        res.setHeader(
+            "Content-Disposition",
+            "attachment; filename=orders.xlsx"
+        );
+
+        // Send file
+        await workbook.xlsx.write(res);
+        res.end();
+
+    } catch (error) {
+        console.log(error)
         res.status(500).json({
             error: error,
             message: "Something went wrong",
