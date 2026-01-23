@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import useProducts from "../hooks/useProducts";
 import toast, { Toaster } from "react-hot-toast";
 import { ImagePlus, Loader, X } from "lucide-react";
+
 type tabs = "Products" | "Add Product"
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 const AdminProducts: React.FC = () => {
@@ -62,6 +63,7 @@ const AddProduct: React.FC = () => {
     const [productDetails, setProductDetails] = useState({
         product_name: "",
         product_description: "",
+        category: ""
     });
 
     const [productVariants, setProductVariants] = useState<Product_Variant[]>([])
@@ -102,6 +104,7 @@ const AddProduct: React.FC = () => {
         const formData: FormData = new FormData()
         formData.append('product_description', productDetails.product_description);
         formData.append('product_name', productDetails.product_name);
+        formData.append('category', productDetails.category);
         // formData.append('price', `${productDetails.price}`);
         // formData.append('qunatity', `${productDetails.qunatity}`);
         for (let i = 0; i < images.length; i++) {
@@ -125,8 +128,7 @@ const AddProduct: React.FC = () => {
             setProductDetails({
                 product_description: "",
                 product_name: "",
-                // price: 0,
-                // qunatity: 0
+                category: "",
             })
         } catch (error) {
             toast.error("Something went wrong")
@@ -134,8 +136,7 @@ const AddProduct: React.FC = () => {
             setProductDetails({
                 product_description: "",
                 product_name: "",
-                // price: 0,
-                // qunatity: 0
+                category: "",
             })
         }
     }
@@ -164,6 +165,17 @@ const AddProduct: React.FC = () => {
                     onChange={handleChange}
                     rows={4}
                     placeholder="Describe the product"
+                    className="mt-1 w-full rounded-lg border px-3 py-2 text-sm focus:ring-2 focus:ring-[#FF6B2C] outline-none"
+                />
+            </div>
+            <div>
+                <label className="text-sm font-medium">Category</label>
+                <textarea
+                    name="category"
+                    value={productDetails.category}
+                    onChange={handleChange}
+                    rows={4}
+                    placeholder="Enter Product Category"
                     className="mt-1 w-full rounded-lg border px-3 py-2 text-sm focus:ring-2 focus:ring-[#FF6B2C] outline-none"
                 />
             </div>
