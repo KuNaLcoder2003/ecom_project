@@ -45,7 +45,6 @@ const arr1 = New_Arrival.slice(0, 3);
 
 const arr2 = New_Arrival.slice(3, 6);
 const NewArrivals: React.FC = () => {
-    console.log(arr2)
     return (
         <div className="w-[90%] lg:max-w-[83%] m-auto mt-8 mb-2 space-y-4">
             <SectionHeading subHeading="Shop the Latest Styles: Stay ahead of the curve with our newest arrivals" heading="New Arrivals" />
