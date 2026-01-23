@@ -200,6 +200,7 @@ const Product: React.FC = () => {
                                 },
                             ].map((item, index) => (
                                 <ProductCard
+                                    id={`${item.product_name}_${item.product_price}`}
                                     key={index}
                                     product_name={item.product_name}
                                     product_price={item.product_price}
