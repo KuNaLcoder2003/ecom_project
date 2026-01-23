@@ -5,7 +5,7 @@ import toast from "react-hot-toast";
 // import { useState } from "react";
 
 const AdminOrders: React.FC = () => {
-    const { orders, loading, error } = useAdminOrder();
+    const { orders, loading, error, downloadOrders } = useAdminOrder();
     // const [isDetailsOpen, setIsDetailsOpen] = useState<boolean>(false);
     // const [selectedOrder, setSelectedOrder] = useState<string>("");
     if (loading) {
@@ -35,7 +35,7 @@ const AdminOrders: React.FC = () => {
                         <h2 className="text-xl font-bold text-slate-800">All Orders</h2>
                         <p className="text-sm text-slate-500 mt-1">Manage and track all customer orders</p>
                     </div>
-                    <button className="px-4 py-2 bg-gradient-to-r from-blue-500 to-cyan-600 text-white rounded-lg font-semibold hover:shadow-lg transition">
+                    <button onClick={() => downloadOrders()} className="px-4 py-2 bg-gradient-to-r from-blue-500 to-cyan-600 text-white rounded-lg font-semibold hover:shadow-lg transition">
                         Export Orders
                     </button>
                 </div>
