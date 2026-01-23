@@ -15,6 +15,9 @@ import ProductList from './components/ProductList'
 import { useState } from 'react'
 import { ArrowBigLeft, ArrowBigRight } from 'lucide-react'
 import toast, { Toaster } from 'react-hot-toast'
+import Mens from './pages/Mens'
+import Womens from './pages/Women'
+import Bags from './pages/Bags'
 
 function App() {
 
@@ -35,6 +38,9 @@ function App() {
         <Route path='/admin/signin' element={<AdminSignin />} />
         <Route path='/product/search/:debouncedWord' element={<ProductList />} />
         <Route path='/temp' element={<TransferList />} />
+        <Route path='/men' element={<Mens />} />
+        <Route path='/women' element={<Womens />} />
+        <Route path='/bags' element={<Bags />} />
       </Routes>
     </>
   )
