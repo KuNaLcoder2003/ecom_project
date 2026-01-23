@@ -74,6 +74,28 @@ function useAdminOrder() {
             setLoadingDetail(false)
         }
     }
-    return { orders, error, loading, getOrderdProduct, loading_detail }
+    async function downloadOrders() {
+        const token = localStorage.getItem('token') as string
+        const response = await fetch(
+            `${BACKEND_URL}/order/admin/downloadOrders`,
+            {
+                method: 'GET',
+                headers: {
+                    'Authorization': token
+                }
+            }
+        );
+
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "orders.xlsx";
+        a.click();
+
+        window.URL.revokeObjectURL(url);
+    }
+    return { orders, error, loading, getOrderdProduct, loading_detail, downloadOrders }
 }
 export default useAdminOrder;
