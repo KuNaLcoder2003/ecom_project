@@ -1,5 +1,5 @@
 import type React from "react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import useProducts from "../hooks/useProducts";
 import toast, { Toaster } from "react-hot-toast";
 import { ImagePlus, Loader, X } from "lucide-react";
@@ -20,27 +20,38 @@ const AdminProducts: React.FC = () => {
     return (
         <>
             {
-                loading ? <Loader /> : <div className="w-full space-y-4 p-4">
+                loading ? <Loader /> : <div className="w-full space-y-4 p-4 overflow-scroll">
                     <Toaster />
                     <div className="flex items-center gap-4 w-xl">
                         <div onClick={() => setTab("Products")} className={`${tab == "Products" ? "bg-black text-white rounded-lg" : ""} px-6 py-2 text-center cursor-pointer`}>Products</div>
                         <div onClick={() => setTab("Add Product")} className={`${tab == "Add Product" ? "bg-black text-white rounded-lg" : ""} px-6 py-2 text-center cursor-pointer`}>Add Product</div>
                     </div>
 
-                    <div className="w-full h-screen overflow-y-scroll flex flex-col items-baseline gap-4">
-                        {
-                            tab == "Products" && products?.map(product => {
-                                return (
-                                    <ProductRow variant_id={product.id} color={product.color} size={product.size} images={product.images} price={product.price} quantity={product.quantity} id={product.product.id} product_name={product.product.product_name} product_description={product.product.product_name} key={product.id} />
-                                )
-                            })
-                        }
-                    </div>
+                    {tab === "Products" && (
+                        <div className="w-full h-screen overflow-y-scroll flex flex-col gap-4">
+                            {products?.length === 0 ? (
+                                <p className="text-gray-500">No product added yet</p>
+                            ) : (
+                                products?.map(product => (
+                                    <ProductRow
+                                        key={product.id}
+                                        variant_id={product.id}
+                                        color={product.color}
+                                        size={product.size}
+                                        images={product.images}
+                                        price={product.price}
+                                        quantity={product.quantity}
+                                        id={product.product.id}
+                                        product_name={product.product.product_name}
+                                        product_description={product.product.product_name}
+                                    />
+                                ))
+                            )}
+                        </div>
+                    )}
 
+                    {tab === "Add Product" && <AddProduct />}
 
-                    {
-                        tab == "Add Product" && <AddProduct />
-                    }
                 </div>
             }
         </>
@@ -57,9 +68,7 @@ interface Product_Variant {
 
 const AddProduct: React.FC = () => {
 
-    useEffect(() => {
-        console.log("AddProduct mounted");
-    }, []);
+
     const [productDetails, setProductDetails] = useState({
         product_name: "",
         product_description: "",
@@ -144,18 +153,29 @@ const AddProduct: React.FC = () => {
     return (
         <div className="max-w-3xl mx-auto bg-white rounded-xl shadow-sm border p-6 space-y-6">
             <h2 className="text-xl font-semibold">Add Product</h2>
-            <div>
-                <label className="text-sm font-medium">Product Name</label>
-                <input
-                    type="text"
-                    name="product_name"
-                    value={productDetails.product_name}
-                    onChange={handleChange}
-                    placeholder="Enter product name"
-                    className="mt-1 w-full rounded-lg border px-3 py-2 text-sm focus:ring-2 focus:ring-[#FF6B2C] outline-none"
-                />
+            <div className="flex items-center gap-4">
+                <div>
+                    <label className="text-sm font-medium">Product Name</label>
+                    <input
+                        type="text"
+                        name="product_name"
+                        value={productDetails.product_name}
+                        onChange={handleChange}
+                        placeholder="Enter product name"
+                        className="mt-1 w-full rounded-lg border px-3 py-2 text-sm focus:ring-2 focus:ring-[#FF6B2C] outline-none"
+                    />
+                </div>
+                <div>
+                    <label className="text-sm font-medium">Category</label>
+                    <input
+                        name="category"
+                        value={productDetails.category}
+                        onChange={handleChange}
+                        placeholder="Enter Product Category"
+                        className="mt-1 w-full rounded-lg border px-3 py-2 text-sm focus:ring-2 focus:ring-[#FF6B2C] outline-none"
+                    />
+                </div>
             </div>
-
 
             <div>
                 <label className="text-sm font-medium">Description</label>
@@ -168,17 +188,7 @@ const AddProduct: React.FC = () => {
                     className="mt-1 w-full rounded-lg border px-3 py-2 text-sm focus:ring-2 focus:ring-[#FF6B2C] outline-none"
                 />
             </div>
-            <div>
-                <label className="text-sm font-medium">Category</label>
-                <textarea
-                    name="category"
-                    value={productDetails.category}
-                    onChange={handleChange}
-                    rows={4}
-                    placeholder="Enter Product Category"
-                    className="mt-1 w-full rounded-lg border px-3 py-2 text-sm focus:ring-2 focus:ring-[#FF6B2C] outline-none"
-                />
-            </div>
+
 
             <ProductVariants productVariants={productVariants} setProductVariant={setProductVariants} />
 
