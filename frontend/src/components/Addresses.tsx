@@ -39,9 +39,11 @@ const AddressStep = ({
                 headers: {
                     'Content-Type': 'application/json',
                     'authorization': token,
-                    'address_id': selectedAddress.id as string,
-                    'cart_id': cart[0].cart_id as string
                 },
+                body: JSON.stringify({
+                    address_id: selectedAddress.id as string,
+                    cart_id: cart[0].cart_id as string
+                })
             })
             const data = await response.json()
             if (data.order_id && data.session_url) {
