@@ -34,6 +34,7 @@ interface Product {
     product_name: string;
     product_description: string;
     variants: Product_Variant[] | any
+    category?: string
 
 }
 interface ProductImage {
@@ -51,7 +52,7 @@ interface Product_Type {
 
 productsRouter.post('/', upload.array('images'), async (req: express.Request, res: express.Response) => {
     try {
-        const { product_description, product_name, variants }: Product = req.body;
+        const { product_description, product_name, variants, category }: Product = req.body;
         console.log(req.body)
         const images = req.files as Express.Multer.File[]
 
@@ -81,6 +82,7 @@ productsRouter.post('/', upload.array('images'), async (req: express.Request, re
                 data: {
                     product_name: product_name,
                     product_description: product_description,
+                    category: category
                 }
             });
 
@@ -98,7 +100,7 @@ productsRouter.post('/', upload.array('images'), async (req: express.Request, re
                     .replace(/([a-zA-Z0-9]+)\s*:/g, '"$1":')  // Wrap keys in quotes
                     .replace(/:\s*([a-zA-Z]+)/g, ': "$1"');   // Wrap string values in quotes
 
-                return JSON.parse(formattedStr);
+                // return JSON.parse(formattedStr);
             });
 
             console.log(jsonArray)
