@@ -332,34 +332,46 @@ const ProductVariants: React.FC<{ productVariants: Product_Variant[], setProduct
             <h3 className="text-sm font-semibold">Product Variants</h3>
 
             <div className="grid grid-cols-3 gap-3">
-                <input
-                    placeholder="Size (S, M, L)"
-                    value={size}
-                    onChange={e => setSize(e.target.value)}
-                    className="rounded-lg border px-3 py-2 text-sm"
-                />
+                <div className="space-y-2">
+                    <p>Size</p>
+                    <input
+                        placeholder="Size (S, M, L)"
+                        value={size}
+                        onChange={e => setSize(e.target.value)}
+                        className="rounded-lg border px-3 py-2 text-sm"
+                    />
+                </div>
 
-                <input
-                    placeholder="Color (Red, Blue)"
-                    value={color}
-                    onChange={e => setColors(e.target.value)}
-                    className="rounded-lg border px-3 py-2 text-sm"
-                />
+                <div className="space-y-2">
+                    <p>Color</p>
+                    <input
+                        placeholder="Color (Red, Blue, etc)"
+                        value={color}
+                        onChange={e => setColors(e.target.value)}
+                        className="rounded-lg border px-3 py-2 text-sm"
+                    />
+                </div>
 
-                <input
-                    type="number"
-                    placeholder="Qty"
-                    value={quantity}
-                    onChange={e => setQuantity(+e.target.value)}
-                    className="rounded-lg border px-3 py-2 text-sm"
-                />
-                <input
-                    type="number"
-                    placeholder="Price"
-                    value={price}
-                    onChange={e => setPrice(+e.target.value)}
-                    className="rounded-lg border px-3 py-2 text-sm"
-                />
+                <div className="space-y-2">
+                    <p>Quantity</p>
+                    <input
+                        type="number"
+                        placeholder="Qty"
+                        value={quantity}
+                        onChange={e => setQuantity(+e.target.value)}
+                        className="rounded-lg border px-3 py-2 text-sm"
+                    />
+                </div>
+                <div className="space-y-2">
+                    <p>Price</p>
+                    <input
+                        type="number"
+                        placeholder="Price"
+                        value={price}
+                        onChange={e => setPrice(+e.target.value)}
+                        className="rounded-lg border px-3 py-2 text-sm"
+                    />
+                </div>
             </div>
 
             <button
