@@ -63,6 +63,7 @@ orderRouter.post('/cart', authMiddleware, async (req: express.Request, res: expr
 orderRouter.post('/createOrder', authMiddleware, async (req: any, res: express.Response) => {
     try {
         const userId = req.userId;
+        console.log(userId)
         const adress_id: string = req.headers.address_id as string;
         const cart_id: string = req.headers.cart_id as string;
         if (!userId) {
@@ -87,10 +88,17 @@ orderRouter.post('/createOrder', authMiddleware, async (req: any, res: express.R
         const response = await prisma.$transaction(async (tx) => {
             const newOrder = await tx.order.create({
                 data: {
-                    user_id: userId,
+
                     status: "Payment Pending",
-                    address_id: adress_id,
-                    cart_id: cart_id,
+                    user: {
+                        connect: { id: userId }
+                    },
+                    cart: {
+                        connect: { id: cart_id }
+                    },
+                    address: {
+                        connect: { id: adress_id }
+                    }
                 }
             })
 
