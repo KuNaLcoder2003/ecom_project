@@ -1,4 +1,5 @@
 import type React from "react";
+import { useNavigate } from "react-router-dom";
 
 const Collections: React.FC = () => {
     return (
@@ -19,10 +20,11 @@ const SectionHeading: React.FC = () => {
 }
 
 const CollectionGrid: React.FC = () => {
+    const navigate = useNavigate();
     return (
         <div className="w-full px-4 mb-16">
             {/* Centered Grid Wrapper */}
-            <div className="
+            <div onClick={() => navigate('/women')} className="
                 max-w-7xl mx-auto
                 grid grid-cols-1 md:grid-cols-2
                 grid-rows-none md:grid-rows-2
@@ -51,7 +53,8 @@ const CollectionGrid: React.FC = () => {
                 </div>
 
                 {/* TOP RIGHT CARD */}
-                <div className="relative rounded-lg overflow-hidden group">
+                <div onClick={() => navigate('/men')} className="relative rounded-lg overflow-hidden group">
+
                     <img
                         src="https://framerusercontent.com/images/uu7gVGc6h2mMRMjcOHoypsA4Lvo.png"
                         alt="Men Collection"
@@ -73,7 +76,8 @@ const CollectionGrid: React.FC = () => {
                 </div>
 
                 {/* BOTTOM RIGHT CARD */}
-                <div className="relative rounded-lg overflow-hidden group">
+                <div onClick={() => navigate('/bags')} className="relative rounded-lg overflow-hidden group">
+
                     <img
                         src="https://framerusercontent.com/images/1edwDzEP1a3uFGghWkzpDy0Bn9Q.png"
                         alt="Accessories Collection"
