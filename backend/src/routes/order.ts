@@ -205,6 +205,7 @@ orderRouter.post('/createOrder', authMiddleware, async (req: any, res: express.R
     } catch (error) {
         console.log(error)
         res.status(500).json({
+            error: error,
             message: "Something went wrong"
         })
     }
