@@ -44,6 +44,7 @@ model products {
   id String @id @default(uuid()) @unique
   product_name String
   product_description String
+  category String @default("Unisex")
   images product_images[]
   cart_products cart_products[]
   ordered_products ordered_products[]
