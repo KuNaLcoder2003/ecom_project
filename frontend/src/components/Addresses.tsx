@@ -56,8 +56,9 @@ const AddressStep = ({
                     toast.error("Stripe failed to load");
                     return;
                 }
-                setLoading(false);
+
                 window.location.href = data.session_url;
+                setLoading(false);
             } else {
                 toast.error(data.message);
                 setLoading(false);
@@ -71,7 +72,7 @@ const AddressStep = ({
         <>
             <Toaster />
             {
-                loading ? <div className="w-screen h-screen flex items-center justify-center">
+                loading ? <div className="w-screen flex items-center justify-center">
                     <div className="flex flex-col items-center justify-center gap-4">
                         <h3 className="text-3xl font-semibold font-[Interif] text-center">Please wait we're setting up payment</h3>
                         <LoaderPinwheel />
