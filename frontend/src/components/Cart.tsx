@@ -38,7 +38,7 @@ const Cart: React.FC<{ setCart: React.Dispatch<React.SetStateAction<boolean>> }>
 
     return (
         <>
-            <div className="absolute inset-0 bg-black/20 flex items-center h-auto z-[9999] overflow-hidden">
+            <div className="fixed inset-0 bg-black/40 z-60 flex items-center h-auto">
                 <div onClick={() => setCart(false)} className="flex-1 w-full h-full">
                 </div>
                 <motion.div
