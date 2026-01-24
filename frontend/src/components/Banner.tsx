@@ -1,14 +1,15 @@
-import { FacebookIcon, Star, InstagramIcon, GitPullRequestCreateArrowIcon, TwitterIcon } from "lucide-react";
+// import { FacebookIcon, Star, InstagramIcon, GitPullRequestCreateArrowIcon, TwitterIcon } from "lucide-react";
+import { Star } from "lucide-react";
 import type React from "react";
-import LogoLoop from "./LogoLoop";
+// import LogoLoop from "./LogoLoop";
 
 
-const techLogos = [
-    { node: <FacebookIcon />, title: "React", href: "https://react.dev" },
-    { node: <InstagramIcon />, title: "Next.js", href: "https://nextjs.org" },
-    { node: <TwitterIcon />, title: "TypeScript", href: "https://www.typescriptlang.org" },
-    { node: <GitPullRequestCreateArrowIcon />, title: "Tailwind CSS", href: "https://tailwindcss.com" },
-];
+// const techLogos = [
+//     { node: <FacebookIcon />, title: "React", href: "https://react.dev" },
+//     { node: <InstagramIcon />, title: "Next.js", href: "https://nextjs.org" },
+//     { node: <TwitterIcon />, title: "TypeScript", href: "https://www.typescriptlang.org" },
+//     { node: <GitPullRequestCreateArrowIcon />, title: "Tailwind CSS", href: "https://tailwindcss.com" },
+// ];
 
 
 // const imageLogos = [
@@ -32,7 +33,7 @@ const Banner: React.FC = () => {
                 </div>
                 <p className="w-full text-5xl text-center font-[Interif]">"I love the variety of styles and the high-quality clothing on this web <br /> fashion site."</p>
                 <p className="w-full text-xl text-center font-[Interif]"> - Some & Co</p>
-                <div className="max-w-4xl">
+                {/* <div className="max-w-4xl">
                     <LogoLoop
                         logos={techLogos}
                         speed={120}
@@ -45,7 +46,7 @@ const Banner: React.FC = () => {
 
                         ariaLabel="Technology partners"
                     />
-                </div>
+                </div> */}
             </div>
         </div>
     )
